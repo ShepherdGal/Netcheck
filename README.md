@@ -56,8 +56,6 @@ The only connections Netcheck makes are the ones a check needs (listed under [Wh
     <td align="center"><b>History</b> · compare before and after</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/settings.png" alt="Settings"></td>
-    <td></td>
   </tr>
   <tr>
     <td align="center"><b>Settings</b> · size, units, your data, updates</td>
@@ -80,7 +78,7 @@ The installed app can look for a newer version on GitHub at most once a day (you
 ## What it sends over the internet
 
 - **Speed test:** downloads and uploads test data to Cloudflare's public speed test service (`speed.cloudflare.com`) for about 8 seconds each way. On a fast connection a check uses up to about 1 GB, so avoid it on a capped mobile plan. Like any visit to that service, Cloudflare sees your IP address (see [Cloudflare's privacy policy](https://www.cloudflare.com/privacypolicy/)).
-- **Ping and ping loss:** small pings to large public services (Cloudflare 1.1.1.1, Google 8.8.8.8, Quad9 9.9.9.9).
+- **Ping and ping loss:** small pings to large public services (Cloudflare 1.1.1.1, Google 8.8.8.8, OpenDNS 208.67.222.222).
 - **DNS race:** small name lookups sent to the DNS services being compared, encrypted for services that offer private lookups.
 - **Update check:** reads the release list from GitHub. A release downloads only when you click **Update Now**.
 
