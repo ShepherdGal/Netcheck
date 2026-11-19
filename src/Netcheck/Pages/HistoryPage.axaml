@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Netcheck.Pages.HistoryPage">
+  <!-- P6 (mockup design/history-mockup.html, approved 2026-11-16). Pattern: List + one Detail view (Compare, with Back).
+       One button whose label follows the picks: Open (one) / Compare (two). Eight rows per page, never scrolls. -->
+  <UserControl.Styles>
+    <Style Selector="Border.row">
+      <Setter Property="Background" Value="{StaticResource Surface2ClearBrush}" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Focusable" Value="True" />
+      <Setter Property="Transitions">
+        <Transitions><BrushTransition Property="Background" Duration="0:0:0.14" /></Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.row:pointerover">
+      <Setter Property="Background" Value="#06FFFFFF" />
+    </Style>
+    <Style Selector="Border.row.sel">
+      <Setter Property="Background" Value="#148DB8F2" />
+    </Style>
+    <Style Selector="Border.row:focus-visible">
+      <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+    </Style>
+    <Style Selector="Button:disabled">
+      <Setter Property="Opacity" Value="0.35" />
+    </Style>
+  </UserControl.Styles>
+
+  <Panel Classes="page">
+
+    <!-- List -->
+    <StackPanel x:Name="ListView">
+      <StackPanel HorizontalAlignment="Center" Spacing="16">
+        <TextBlock Classes="pageTitle" Text="Your Past Checks" />
+        <TextBlock x:Name="Lead" Classes="pageLead" Text="Pick one to open it, or two to compare." />
+      </StackPanel>
+      <Border Classes="card" Padding="0" Margin="0,32,0,0">
+        <StackPanel>
+          <Grid x:Name="HeaderRow" Height="44" Margin="24,0" />
+          <StackPanel x:Name="Rows" />
+        </StackPanel>
+      </Border>
+      <Grid ColumnDefinitions="*,Auto,*" Margin="0,16,0,0">
+        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+          <Button x:Name="NewerButton" Theme="{StaticResource NcLinkButton}" Content="‹ Newer" />
+          <TextBlock x:Name="PageText" FontSize="17" Foreground="{StaticResource Ink3Brush}" VerticalAlignment="Center" />
+          <Button x:Name="OlderButton" Theme="{StaticResource NcLinkButton}" Content="Older ›" />
+        </StackPanel>
+        <Button Grid.Column="1" x:Name="GoButton" Theme="{StaticResource NcPrimaryButton}" Classes="big" Content="Compare" MinWidth="150" />
+        <TextBlock Grid.Column="2" x:Name="Hint" FontSize="17" Foreground="{StaticResource Ink3Brush}"
+                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+      </Grid>
+    </StackPanel>
+
+    <!-- Compare (detail view with Back) -->
+    <StackPanel x:Name="CompareView" IsVisible="False">
+      <!-- Back shares the title's row so the title sits where every page title sits (2026-11-17). -->
+      <Panel>
+      <Button x:Name="BackButton" Theme="{StaticResource NcLinkButton}" Padding="2,6,8,6" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,-4,0,0" ZIndex="1">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Path Data="M15,6 L9,12 L15,18" Width="10" Height="14" Stretch="Uniform" StrokeThickness="2" StrokeLineCap="Round"
+                Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" VerticalAlignment="Center" />
+          <TextBlock Text="Back" />
+        </StackPanel>
+      </Button>
+      <StackPanel HorizontalAlignment="Center" Spacing="16">
+        <TextBlock Classes="pageTitle" Text="Before and After" />
+        <TextBlock Classes="pageLead" Text="One check on each side. Small differences are normal between checks." />
+      </StackPanel>
+      </Panel>
+      <Border Classes="card" Padding="0" Margin="0,32,0,0">
+        <StackPanel x:Name="CompareRows" />
+      </Border>
+      <Border Classes="card" Padding="24,16" Margin="0,16,0,0">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+          <TextBlock Text="In between" FontSize="16" Foreground="{StaticResource Ink3Brush}" VerticalAlignment="Top" Margin="0,1,0,0" />
+          <TextBlock Grid.Column="1" x:Name="BetweenText" FontSize="17" Foreground="{StaticResource Ink2Brush}" TextWrapping="Wrap" />
+        </Grid>
+      </Border>
+    </StackPanel>
+
+    <!-- Empty -->
+    <StackPanel x:Name="EmptyView" IsVisible="False" HorizontalAlignment="Center" Spacing="16">
+      <TextBlock Classes="pageTitle" Text="No Checks Yet" />
+      <TextBlock x:Name="EmptyLead" Classes="pageLead" MaxWidth="760" Text="Every check you run is saved here, so you can compare before and after a change." />
+      <Button x:Name="EmptyButton" Theme="{StaticResource NcPrimaryButton}" Classes="big" Content="Check My Internet"
+              HorizontalAlignment="Center" />
+    </StackPanel>
+  </Panel>
+</UserControl>

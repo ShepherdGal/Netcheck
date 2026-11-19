@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <!-- Upgrade/rollback test builds only: -p:NetcheckTestFeed=true points the update check at a local fixture feed. -->
+  <PropertyGroup Condition="'$(NetcheckTestFeed)' == 'true'">
+    <DefineConstants>$(DefineConstants);NETCHECK_TEST_FEED</DefineConstants>
+  </PropertyGroup>
+</Project>

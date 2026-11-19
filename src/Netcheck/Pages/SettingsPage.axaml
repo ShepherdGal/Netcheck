@@ -1,0 +1,178 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Netcheck.Pages.SettingsPage">
+  <!-- Pattern: Settings / Configuration (approved mockup design/settings-mockup.html, P7). Centred title (+ a green
+       "Update available" link only after a verified newer release), then one glass card of six rows: label + short
+       description on the left, the control on the right, separated by hairlines. No scrolling. -->
+  <UserControl.Styles>
+    <Style Selector="RadioButton.seg">
+      <Setter Property="MinWidth" Value="64" />
+      <Setter Property="FontSize" Value="17" />
+    </Style>
+    <!-- The chosen item's pill: a separate Border that glides between choices (SelectionSlider, same motion as the tabs). -->
+    <Style Selector="Border.selPill">
+      <Setter Property="Background" Value="{StaticResource SelPillBrush}" />
+      <Setter Property="CornerRadius" Value="{StaticResource RadiusTab}" />
+    </Style>
+    <Style Selector="RadioButton.seg:disabled">
+      <Setter Property="Opacity" Value="0.35" />
+    </Style>
+    <Style Selector="Grid.row">
+      <Setter Property="Margin" Value="24,16" />
+      <Setter Property="MinHeight" Value="48" />
+    </Style>
+    <Style Selector="TextBlock.rowTitle">
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.rowHint">
+      <Setter Property="FontSize" Value="17" />
+      <Setter Property="Foreground" Value="{StaticResource Ink2Brush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="Border.pill">
+      <Setter Property="Padding" Value="4" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Background" Value="{StaticResource SelBarBrush}" />
+      <Setter Property="BorderBrush" Value="{StaticResource SelBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.rowLink">
+      <Setter Property="FontSize" Value="17" />
+      <Setter Property="Padding" Value="4,6" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
+
+  <Panel Classes="page">
+    <StackPanel>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16">
+        <TextBlock Classes="pageTitle" Text="Settings" />
+        <Button x:Name="UpdateLink" Theme="{StaticResource NcLinkButton}" IsVisible="False" VerticalAlignment="Center"
+                Foreground="{StaticResource GoodBrush}" Padding="0,6" Margin="0,6,0,0">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Ellipse Width="7" Height="7" Fill="{StaticResource GoodBrush}" VerticalAlignment="Center" />
+            <TextBlock Text="Update available" FontSize="17" FontWeight="SemiBold" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+
+      <Border Classes="card" Padding="0" Margin="0,32,0,0">
+        <StackPanel>
+          <!-- App size -->
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Classes="rowTitle" Text="App size" />
+              <TextBlock Classes="rowHint" Text="Makes everything larger. Sizes that don't fit this screen are off." />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="pill">
+              <Panel>
+                <Border x:Name="SizePill" Classes="selPill" />
+                <StackPanel x:Name="Sizes" Orientation="Horizontal" Spacing="4" />
+              </Panel>
+            </Border>
+          </Grid>
+
+          <!-- Speed units -->
+          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
+              <StackPanel Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="Speed units" />
+                <TextBlock Classes="rowHint" Text="Internet plans use Mbps. Downloads in your browser use MB/s." />
+              </StackPanel>
+              <Border Grid.Column="1" Classes="pill">
+                <Panel>
+                <Border x:Name="UnitPill" Classes="selPill" />
+                <StackPanel x:Name="Units" Orientation="Horizontal" Spacing="4">
+                  <RadioButton x:Name="BitsUnit" Theme="{StaticResource NcTab}" Classes="seg" GroupName="Units" Content="Mbps" />
+                  <RadioButton x:Name="BytesUnit" Theme="{StaticResource NcTab}" Classes="seg" GroupName="Units" Content="MB/s" />
+                </StackPanel>
+                </Panel>
+              </Border>
+            </Grid>
+          </Border>
+
+          <!-- How the last check was measured -->
+          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
+              <StackPanel Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="How the last check was measured" />
+                <TextBlock x:Name="MethodHint" Classes="rowHint" Text="Servers, data used and how each reading is worked out." />
+              </StackPanel>
+              <Button Grid.Column="1" x:Name="MethodButton" Theme="{StaticResource NcQuietButton}" Content="Show"
+                      MinWidth="96" VerticalAlignment="Center" />
+            </Grid>
+          </Border>
+
+          <!-- Your data -->
+          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
+              <StackPanel Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="Your data" />
+                <TextBlock x:Name="DataHint" Classes="rowHint" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                <Button x:Name="ClearLink" Theme="{StaticResource NcLinkButton}" Classes="rowLink" Content="Clear History…" />
+                <Button x:Name="FolderButton" Theme="{StaticResource NcQuietButton}" Content="Open Folder" VerticalAlignment="Center" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- Check for updates -->
+          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
+              <StackPanel Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="Check for updates" />
+                <TextBlock x:Name="UpdatesHint" Classes="rowHint">
+                  <Run x:Name="UpdatesWhen" Text="Once a day, from GitHub. " /><Run x:Name="LastChecked" Foreground="{StaticResource Ink3Brush}" />
+                </TextBlock>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                <Button x:Name="CheckNowLink" Theme="{StaticResource NcLinkButton}" Classes="rowLink" Content="Check Now" />
+                <ToggleButton x:Name="AutoSwitch" Theme="{StaticResource NcSwitch}" VerticalAlignment="Center"
+                              AutomationProperties.Name="Check for updates automatically" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- Version: installed / update ready / updating / portable / development -->
+          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
+              <StackPanel Spacing="2" VerticalAlignment="Center">
+                <TextBlock x:Name="VersionTitle" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center">
+                  <Run x:Name="VersionNumber" FontSize="24" FontWeight="Light" /><Run x:Name="VersionLabel" />
+                </TextBlock>
+                <TextBlock x:Name="VersionHint" Classes="rowHint" />
+                <Border x:Name="ProgressTrack" Width="300" Height="4" CornerRadius="2" Margin="0,8,0,0" HorizontalAlignment="Left"
+                        Background="{StaticResource LineBrush}" IsVisible="False">
+                  <Border x:Name="ProgressFill" HorizontalAlignment="Left" CornerRadius="2" Width="0"
+                          Background="{StaticResource DownGaugeBrush}" />
+                </Border>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                <Button x:Name="VersionLink" Theme="{StaticResource NcLinkButton}" Classes="rowLink" IsVisible="False" />
+                <Button x:Name="VersionButton" Theme="{StaticResource NcPrimaryButton}" IsVisible="False" MinWidth="96"
+                        VerticalAlignment="Center" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- Support (user, 2026-11-17): the last row, with a soft golden glow so it looks different from settings. -->
+          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Background="{StaticResource SupportGlowBrush}"
+                  CornerRadius="0,0,15,15">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
+              <StackPanel Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="Support Netcheck" Foreground="{StaticResource SupportBrush}" />
+                <TextBlock Classes="rowHint" Text="Netcheck is free. If it helps you, a small tip keeps it going." />
+              </StackPanel>
+              <Button Grid.Column="1" x:Name="SupportLink" Theme="{StaticResource NcLinkButton}" Classes="rowLink"
+                      Content="Donate on Ko-fi ↗" Foreground="{StaticResource SupportBrush}" VerticalAlignment="Center"
+                      ToolTip.Tip="Opens ko-fi.com/trueshepherdmusic in your browser" />
+            </Grid>
+          </Border>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </Panel>
+</UserControl>

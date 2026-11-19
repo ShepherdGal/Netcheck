@@ -1,0 +1,15 @@
+<Solution>
+  <Project Path="src/Netcheck/Netcheck.csproj" />
+  <Project Path="src/Netcheck.Core/Netcheck.Core.csproj" />
+  <Project Path="src/Netcheck.Elevation/Netcheck.Elevation.csproj" />
+  <Project Path="src/Netcheck.Optimization/Netcheck.Optimization.csproj" />
+  <Project Path="src/Netcheck.Storage/Netcheck.Storage.csproj" />
+  <Project Path="src/Netcheck.Measurements/Netcheck.Measurements.csproj" />
+  <Project Path="src/Netcheck.TestServer/Netcheck.TestServer.csproj" />
+  <Project Path="src/Netcheck.Windows/Netcheck.Windows.csproj" />
+  <Project Path="tools/Netcheck.Feasibility/Netcheck.Feasibility.csproj" />
+  <Project Path="tools/Netcheck.TestServer.Host/Netcheck.TestServer.Host.csproj" />
+  <Project Path="tests/Netcheck.Feasibility.Tests/Netcheck.Feasibility.Tests.csproj" />
+  <Project Path="tests/Netcheck.Measurements.Tests/Netcheck.Measurements.Tests.csproj" />
+</Solution>
+

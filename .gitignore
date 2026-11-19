@@ -1,0 +1,54 @@
+# Netcheck: only source, tests, tools and public docs belong in this repository.
+# Release packages go to GitHub Releases, never into the repository.
+
+# Build output
+bin/
+obj/
+artifacts/
+TestResults/
+*.trx
+
+# Binaries and packages (publish them as release assets instead)
+*.exe
+*.zip
+*.msi
+*.nupkg
+packages/
+
+# Local SDK copy and backups
+.dotnet-sdk/
+.dotnet-home/
+.backups/
+
+# App data that must never be committed (history, settings, recovery records)
+Data/
+*.db
+*.db-*
+history.json
+appearance.json
+dns-original.json
+boost-*.json
+update-journal.json
+
+# Logs, dumps and temporary files
+*.log
+*.dmp
+*.tmp
+
+# Secrets and credentials (Netcheck itself never stores any)
+.env
+.env.*
+*.pfx
+*.snk
+*.key
+*.pem
+*.secrets.json
+NuGet.Config
+[Nn]u[Gg]et.[Cc]onfig
+
+# Editors and IDEs
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo

@@ -1,0 +1,165 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Netcheck.Pages.DnsPage">
+  <!-- Pattern: Form (choose a goal, start) → live race → result (Detail) → all results (Detail).
+       Same centred frame as Check: title + one line, centred actions, joined glass cards with hairlines. -->
+  <UserControl.Styles>
+    <!-- One size for the choice cards and the detail cards so the two rows match. -->
+    <Style Selector="RadioButton.dnsCell">
+      <Setter Property="Padding" Value="24,0" />
+      <Setter Property="Height" Value="96" />
+    </Style>
+    <Style Selector="Border.dnsCell">
+      <Setter Property="Padding" Value="24,0" />
+      <Setter Property="Height" Value="96" />
+    </Style>
+    <Style Selector="Border.dnsCell > StackPanel">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
+  <Panel Classes="page">
+
+    <!-- 1. Choose and start -->
+    <!-- The chosen layout (2026-11-17, design rules "Start-page rhythm"), top-aligned: title 16 line, 48 to the action
+         (button, Switch Back 16 below it), 64 to the choices, the note centred 64 above and below, then the details. -->
+    <Grid x:Name="FormView">
+      <StackPanel>
+        <StackPanel HorizontalAlignment="Center" Spacing="16">
+          <TextBlock Classes="pageTitle" Text="Find Your Fastest DNS" />
+          <TextBlock Classes="pageLead" Text="A faster DNS helps websites start loading sooner." />
+        </StackPanel>
+        <Button x:Name="FindButton" Theme="{StaticResource NcPrimaryButton}" Classes="big" HorizontalAlignment="Center"
+                Margin="0,48,0,0" Content="Find My Fastest DNS" />
+        <!-- A link carries ~15 px above and below its letters: 1 + 15 = 16 visible above; -15 below cancels its own space,
+             so the choices sit 64 under the link when it shows and 64 under the button when it's hidden. -->
+        <Button x:Name="BackLink" Theme="{StaticResource NcLinkButton}" HorizontalAlignment="Center" Margin="0,1,0,-15" IsVisible="False" />
+
+        <!-- Symmetric (design rules "symmetric rows"): the choices and the details share one three-column grid with the
+             same 14 px gaps, both card rows the same height. -->
+        <Panel Margin="0,64,0,0">
+        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="14">
+          <RadioButton x:Name="GoalFast" Theme="{StaticResource NcOption}" GroupName="DnsGoal" IsChecked="True" Classes="dnsCell">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="optTitle" Text="Fastest" FontSize="18" />
+              <TextBlock Classes="optText" Text="Quickest and steadiest." FontSize="17" />
+            </StackPanel>
+          </RadioButton>
+          <RadioButton Grid.Column="1" x:Name="GoalMalware" Theme="{StaticResource NcOption}" GroupName="DnsGoal" Classes="dnsCell">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="optTitle" Text="Fastest + blocks malware" FontSize="18" />
+              <TextBlock Classes="optText" Text="Also blocks scam sites." FontSize="17" />
+            </StackPanel>
+          </RadioButton>
+          <RadioButton Grid.Column="2" x:Name="GoalFamily" Theme="{StaticResource NcOption}" GroupName="DnsGoal" Classes="dnsCell">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="optTitle" Text="Family-safe" FontSize="18" />
+              <TextBlock Classes="optText" Text="Also blocks adult sites." FontSize="17" />
+            </StackPanel>
+          </RadioButton>
+        </Grid>
+        </Panel>
+
+        <!-- The note sits centred between the two card rows: 64 above and below (pageLead is trimmed to its letters). -->
+        <Border Margin="0,64">
+          <TextBlock Classes="pageLead" Text="About 20 seconds. Nothing changes until you choose." HorizontalAlignment="Center" />
+        </Border>
+
+        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="14">
+          <Border Classes="card dnsCell">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="tileLabel" Text="Right now" FontSize="18" />
+              <TextBlock x:Name="DnsName" Text="—" FontSize="32" FontWeight="Light" LetterSpacing="-0.6" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1" Classes="card dnsCell">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="tileLabel" Text="Address" FontSize="18" />
+              <TextBlock x:Name="DnsAddress" Text="—" FontSize="32" FontWeight="Light" LetterSpacing="-0.6" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="2" Classes="card dnsCell">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="tileLabel" Text="Connection" FontSize="18" />
+              <TextBlock x:Name="ConnectionKind" Text="—" FontSize="32" FontWeight="Light" LetterSpacing="-0.6" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </StackPanel>
+    </Grid>
+
+    <!-- 2. Live race -->
+    <StackPanel x:Name="RaceView" IsVisible="False">
+      <StackPanel HorizontalAlignment="Center" Spacing="16">
+        <TextBlock x:Name="RaceTitle" Classes="pageTitle" Text="Testing DNS Servers" />
+        <TextBlock x:Name="RaceLine" Classes="pageLead" />
+        <!-- The Stop button fills up with the test's real progress (user, 2026-11-17, option B): a soft blue fill inside
+             the button's own rounded shape (radius 12 − 1 px border), text keeps the button's 20 × 11 padding. -->
+        <Button x:Name="StopButton" Theme="{StaticResource NcQuietButton}" MinWidth="150" Padding="0"
+                HorizontalAlignment="Center" HorizontalContentAlignment="Stretch" AutomationProperties.Name="Stop">
+          <Border CornerRadius="11" ClipToBounds="True">
+            <Panel>
+              <Border x:Name="StopFill" HorizontalAlignment="Left" Width="0">
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                    <GradientStop Color="#2E8DB8F2" Offset="0" />
+                    <GradientStop Color="#578DB8F2" Offset="1" />
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <TextBlock Text="Stop" Margin="20,11" HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Panel>
+          </Border>
+        </Button>
+      </StackPanel>
+      <Border Classes="card" Padding="0" Margin="0,32,0,0">
+        <StackPanel x:Name="Lanes" />
+      </Border>
+    </StackPanel>
+
+    <!-- 3. Result -->
+    <StackPanel x:Name="ResultView" IsVisible="False">
+      <StackPanel HorizontalAlignment="Center" Spacing="16">
+        <TextBlock x:Name="ResultTitle" Classes="pageTitle" />
+        <!-- Calm density (design rules): one verdict line, one action row. After a switch the status replaces the line
+             and the one button changes role (Switch → Switch back / Try again / Fix it); nothing stacks below. -->
+        <StackPanel x:Name="ResultLinePanel" Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" Background="Transparent">
+          <Ellipse x:Name="ResultDot" Width="9" Height="9" VerticalAlignment="Center" />
+          <TextBlock x:Name="ResultLine" FontSize="19" FontWeight="SemiBold" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center">
+          <Button x:Name="UseButton" Theme="{StaticResource NcPrimaryButton}" />
+          <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <TextBlock x:Name="UseNote" Classes="meta" VerticalAlignment="Center" IsVisible="False" />
+            <Button x:Name="UseInstall" Theme="{StaticResource NcLinkButton}" Content="Install Netcheck" FontSize="16"
+                    Padding="0,4" VerticalAlignment="Center" IsVisible="False" />
+          </StackPanel>
+          <Button x:Name="AgainButton" Theme="{StaticResource NcQuietButton}" Content="Test Again" />
+          <Button x:Name="AllButton" Theme="{StaticResource NcLinkButton}" Content="All Results" />
+        </StackPanel>
+      </StackPanel>
+
+      <Border Classes="card" Padding="0" Margin="0,32,0,0">
+        <Grid x:Name="Podium" ColumnDefinitions="*,*,*" />
+      </Border>
+      <Border Classes="card" Padding="0" Margin="0,16,0,0">
+        <Grid x:Name="Compare" ColumnDefinitions="1.4*,*,*" />
+      </Border>
+      <TextBlock Classes="meta" Margin="0,16,0,0" Text="Download speed and game ping stay the same. DNS only changes how fast a site starts loading." />
+    </StackPanel>
+
+    <!-- 4. All results -->
+    <Grid x:Name="AllView" RowDefinitions="Auto,Auto,*" IsVisible="False">
+      <Button Grid.Row="1" x:Name="BackButton" Theme="{StaticResource NcLinkButton}" Padding="2,6,8,6" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,-4,0,0" ZIndex="1">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Path Data="M15,6 L9,12 L15,18" Width="10" Height="14" Stretch="Uniform" StrokeThickness="2" StrokeLineCap="Round"
+                Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" VerticalAlignment="Center" />
+          <TextBlock Text="Back" />
+        </StackPanel>
+      </Button>
+      <TextBlock Grid.Row="1" Classes="pageTitle" Text="All Results" Margin="0,-8,0,24" />
+      <Border Grid.Row="2" Classes="card" Padding="0" VerticalAlignment="Top">
+        <StackPanel x:Name="AllRows" />
+      </Border>
+    </Grid>
+  </Panel>
+</UserControl>

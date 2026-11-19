@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "netcheck.core": {
+        "type": "Project"
+      },
+      "netcheck.testserver": {
+        "type": "Project",
+        "dependencies": {
+          "Netcheck.Core": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}

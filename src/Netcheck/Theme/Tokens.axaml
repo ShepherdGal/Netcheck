@@ -1,0 +1,104 @@
+<!-- Netcheck design tokens — "Dusk" (design plan §4). Every color, size and radius used by the UI comes from here.
+     Surfaces are translucent "glass" over the night-blue base. Brushes that fade in from nothing use a zero-alpha
+     copy of the SAME color ("Clear" variants), so a hover only changes opacity and never passes through a pale tint. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System">
+  <!-- Base -->
+  <Color x:Key="BgColor">#0E1828</Color>
+  <Color x:Key="GlowColor">#18294A</Color>
+  <Color x:Key="SurfaceColor">#0BFFFFFF</Color>       <!-- glass, ~4 % white -->
+  <Color x:Key="Surface2Color">#17FFFFFF</Color>      <!-- hover / selected glass, ~9 % -->
+  <Color x:Key="LineColor">#38A0BEE6</Color>          <!-- hairline edge: soft blue 22 % (card style B, 2026-11-17; was 9 % white) -->
+  <Color x:Key="LineStrongColor">#2EFFFFFF</Color>
+  <!-- Text -->
+  <Color x:Key="InkColor">#E9F0FA</Color>
+  <Color x:Key="Ink2Color">#9DB0C8</Color>
+  <Color x:Key="Ink3Color">#6F84A0</Color>
+  <!-- Accent: one calm blue for the primary button, links, focus and the active tab -->
+  <Color x:Key="AccentColor">#8DB8F2</Color>
+  <Color x:Key="AccentHoverColor">#A6C8F5</Color>
+  <Color x:Key="AccentPressedColor">#79A6E4</Color>
+  <Color x:Key="AccentInkColor">#0B1726</Color>
+  <Color x:Key="AccentSoftColor">#1F8DB8F2</Color>
+  <!-- Gauges: download light ice blue, upload deeper blue -->
+  <Color x:Key="DownFromColor">#7FA9E6</Color>
+  <Color x:Key="DownToColor">#D6E7FC</Color>
+  <Color x:Key="UpFromColor">#5E8CCB</Color>
+  <Color x:Key="UpToColor">#A9C7EF</Color>
+  <!-- Status: text and dots only -->
+  <Color x:Key="GoodColor">#62C47F</Color>
+  <Color x:Key="FairColor">#F2C26B</Color>
+  <Color x:Key="PoorColor">#E5685D</Color>
+  <Color x:Key="InfoColor">#9CC3F5</Color>
+  <Color x:Key="NeutralColor">#8D9AA8</Color>
+
+  <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}" />
+  <SolidColorBrush x:Key="DialogBrush" Color="#14213A" />          <!-- the one confirm dialog -->
+  <SolidColorBrush x:Key="ScrimBrush" Color="#9E060B14" />          <!-- behind it, ~62 % -->
+  <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
+  <SolidColorBrush x:Key="Surface2Brush" Color="{StaticResource Surface2Color}" />
+  <SolidColorBrush x:Key="Surface2ClearBrush" Color="#00FFFFFF" />
+  <SolidColorBrush x:Key="LineBrush" Color="{StaticResource LineColor}" />
+  <SolidColorBrush x:Key="LineStrongBrush" Color="{StaticResource LineStrongColor}" />
+  <SolidColorBrush x:Key="InkBrush" Color="{StaticResource InkColor}" />
+  <SolidColorBrush x:Key="Ink2Brush" Color="{StaticResource Ink2Color}" />
+  <SolidColorBrush x:Key="Ink3Brush" Color="{StaticResource Ink3Color}" />
+  <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+  <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
+  <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource AccentPressedColor}" />
+  <SolidColorBrush x:Key="AccentInkBrush" Color="{StaticResource AccentInkColor}" />
+  <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource AccentSoftColor}" />
+  <SolidColorBrush x:Key="AccentSoftClearBrush" Color="#008DB8F2" />
+  <SolidColorBrush x:Key="GoodBrush" Color="{StaticResource GoodColor}" />
+  <SolidColorBrush x:Key="FairBrush" Color="{StaticResource FairColor}" />
+  <!-- Support row (user, 2026-11-17: "a soft golden highlight ... fits the UI but looks different"). A warmer, softer gold
+       than the amber "fair" status colour, so it never reads as a warning. -->
+  <SolidColorBrush x:Key="SupportBrush" Color="#E8C483" />
+  <LinearGradientBrush x:Key="SupportGlowBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+    <GradientStop Color="#1AE8C483" Offset="0" />
+    <GradientStop Color="#00E8C483" Offset="0.85" />
+  </LinearGradientBrush>
+  <SolidColorBrush x:Key="PoorBrush" Color="{StaticResource PoorColor}" />
+  <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}" />
+  <SolidColorBrush x:Key="NeutralBrush" Color="{StaticResource NeutralColor}" />
+  <!-- Pick-one bars (tab bar, App size, Speed units), matched to the user's reference 2026-11-17: blue-tinted bar
+       (accent at 12.5 % = #253754 on the base), even soft-blue border (#3F516D), blue-grey chosen pill (#3D5170 on the
+       bar), brighter blue labels (#AAC0DC). -->
+  <SolidColorBrush x:Key="SelBarBrush" Color="#208DB8F2" />
+  <!-- Cards (style B, user 2026-11-17): the tab bar's blue at 7 %, transparent so the page glow shows through. -->
+  <SolidColorBrush x:Key="CardBrush" Color="#128DB8F2" />
+  <SolidColorBrush x:Key="SelBorderBrush" Color="#47A0BEE6" />
+  <SolidColorBrush x:Key="SelPillBrush" Color="#31A0BEE6" />
+  <SolidColorBrush x:Key="SelInkBrush" Color="#AAC0DC" />
+  <SolidColorBrush x:Key="CloseHoverBrush" Color="#C42B1C" />
+  <SolidColorBrush x:Key="CloseHoverClearBrush" Color="#00C42B1C" />
+  <SolidColorBrush x:Key="GaugeTrackBrush" Color="#12FFFFFF" />
+  <SolidColorBrush x:Key="GaugeTickBrush" Color="{StaticResource DownToColor}" />
+  <SolidColorBrush x:Key="DownToBrush" Color="{StaticResource DownToColor}" />
+  <SolidColorBrush x:Key="UpFromBrush" Color="{StaticResource UpFromColor}" />
+
+  <LinearGradientBrush x:Key="DownGaugeBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+    <GradientStop Offset="0" Color="{StaticResource DownFromColor}" />
+    <GradientStop Offset="1" Color="{StaticResource DownToColor}" />
+  </LinearGradientBrush>
+  <LinearGradientBrush x:Key="UpGaugeBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+    <GradientStop Offset="0" Color="{StaticResource UpFromColor}" />
+    <GradientStop Offset="1" Color="{StaticResource UpToColor}" />
+  </LinearGradientBrush>
+  <!-- The top glow (BgColor -> GlowColor) is rendered by Controls/GlowBackdrop.cs, band-free. -->
+  <BoxShadows x:Key="EdgeLight">inset 0 1 0 0 #10FFFFFF</BoxShadows>
+
+  <!-- Type -->
+  <FontFamily x:Key="UiFont">avares://Netcheck/Assets/Fonts#Inter 18pt</FontFamily>
+  <sys:Double x:Key="TextSmall">16</sys:Double>
+  <sys:Double x:Key="TextBody">18</sys:Double>
+  <sys:Double x:Key="TextTitle">22</sys:Double>
+  <sys:Double x:Key="TextHeadline">34</sys:Double>
+  <sys:Double x:Key="TextHero">76</sys:Double>
+
+  <!-- Shape -->
+  <CornerRadius x:Key="RadiusCard">18</CornerRadius>
+  <CornerRadius x:Key="RadiusButton">12</CornerRadius>
+  <CornerRadius x:Key="RadiusTab">10</CornerRadius>
+</ResourceDictionary>

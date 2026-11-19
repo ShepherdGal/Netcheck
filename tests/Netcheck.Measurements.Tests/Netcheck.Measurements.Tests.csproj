@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/Netcheck/SpeedUnits.cs" Link="SpeedUnits.cs" />
+    <Compile Include="../../src/Netcheck/SpeedGaugeScale.cs" Link="SpeedGaugeScale.cs" />
+    <Compile Include="../../src/Netcheck/UiPreferences.cs" Link="UiPreferences.cs" />
+    <Compile Include="../../src/Netcheck/AppPaths.cs" Link="AppPaths.cs" />
+    <ProjectReference Include="../../src/Netcheck.Optimization/Netcheck.Optimization.csproj" />
+    <ProjectReference Include="../../src/Netcheck.Storage/Netcheck.Storage.csproj" />
+    <ProjectReference Include="../../src/Netcheck.Measurements/Netcheck.Measurements.csproj" />
+    <ProjectReference Include="../../src/Netcheck.TestServer/Netcheck.TestServer.csproj" />
+  </ItemGroup>
+</Project>

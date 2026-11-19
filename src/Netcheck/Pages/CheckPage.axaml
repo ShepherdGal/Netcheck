@@ -1,0 +1,135 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nc="using:Netcheck.Controls"
+             x:Class="Netcheck.Pages.CheckPage">
+  <!-- Pattern: Dashboard / Overview (glance), plus one Detail view (opened from Settings). Centred page frame,
+       no scrolling: everything fits the 1120 × 920 window. Header = title + one line + actions. -->
+  <UserControl.Styles>
+    <Style Selector="TextBlock.gaugeLabel">
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="Foreground" Value="{StaticResource Ink2Brush}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.gaugeValue">
+      <Setter Property="FontSize" Value="72" />
+      <Setter Property="FontWeight" Value="Light" />
+      <Setter Property="LetterSpacing" Value="-2.5" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.gaugeUnit">
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="Foreground" Value="{StaticResource Ink3Brush}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
+
+  <Panel x:Name="Body" Classes="page">
+
+    <!-- The activity card takes the space that is left, so the page ends exactly 24 px above the window edge. -->
+    <Grid x:Name="ClusterView" RowDefinitions="Auto,Auto,Auto,*">
+      <!-- Header: title, one line, one button (Check my internet → Stop → Check again) -->
+      <StackPanel HorizontalAlignment="Center" Spacing="16">
+        <TextBlock x:Name="Title" Classes="pageTitle" Text="How's Your Internet?" />
+        <StackPanel x:Name="VerdictLine" Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center">
+          <Ellipse x:Name="VerdictDot" Width="9" Height="9" VerticalAlignment="Center" />
+          <TextBlock x:Name="VerdictText" FontSize="19" FontWeight="SemiBold" />
+        </StackPanel>
+        <TextBlock x:Name="Sub" Classes="pageLead" />
+        <Panel x:Name="Actions" HorizontalAlignment="Center">
+          <Button x:Name="StartButton" Theme="{StaticResource NcPrimaryButton}" Classes="big" Content="Check My Internet" />
+          <Button x:Name="StopButton" Theme="{StaticResource NcQuietButton}" Classes="big" Content="Stop" MinWidth="140" />
+          <Button x:Name="AgainButton" Theme="{StaticResource NcPrimaryButton}" Classes="big" Content="Check Again" />
+        </Panel>
+      </StackPanel>
+
+      <!-- Two separate gauges -->
+      <Grid Grid.Row="1" x:Name="Gauges" ColumnDefinitions="Auto,Auto" ColumnSpacing="120" HorizontalAlignment="Center" Margin="0,32,0,0">
+        <StackPanel Spacing="16">
+          <Panel>
+            <nc:ArcGauge x:Name="DownGauge" Accent="{StaticResource DownGaugeBrush}" Track="{StaticResource GaugeTrackBrush}"
+                         Tick="{StaticResource GaugeTickBrush}" Diameter="290" Width="290" />
+            <StackPanel VerticalAlignment="Top" Margin="0,58,0,0">
+              <TextBlock Classes="gaugeLabel" Text="Download" />
+              <TextBlock x:Name="DownValue" Classes="gaugeValue" Text="—" />
+              <TextBlock x:Name="DownUnit" Classes="gaugeUnit" Text="Mbps" />
+            </StackPanel>
+          </Panel>
+          <StackPanel x:Name="DownMeaning" Orientation="Horizontal" Spacing="7" HorizontalAlignment="Center">
+            <Ellipse x:Name="DownDot" Width="7" Height="7" VerticalAlignment="Center" />
+            <TextBlock x:Name="DownMeaningText" FontSize="18" FontWeight="SemiBold" />
+          </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="16">
+          <Panel>
+            <nc:ArcGauge x:Name="UpGauge" Accent="{StaticResource UpGaugeBrush}" Track="{StaticResource GaugeTrackBrush}"
+                         Tick="{StaticResource GaugeTickBrush}" Diameter="290" Width="290" />
+            <StackPanel VerticalAlignment="Top" Margin="0,58,0,0">
+              <TextBlock Classes="gaugeLabel" Text="Upload" />
+              <TextBlock x:Name="UpValue" Classes="gaugeValue" Text="—" />
+              <TextBlock x:Name="UpUnit" Classes="gaugeUnit" Text="Mbps" />
+            </StackPanel>
+          </Panel>
+          <StackPanel x:Name="UpMeaning" Orientation="Horizontal" Spacing="7" HorizontalAlignment="Center">
+            <Ellipse x:Name="UpDot" Width="7" Height="7" VerticalAlignment="Center" />
+            <TextBlock x:Name="UpMeaningText" FontSize="18" FontWeight="SemiBold" />
+          </StackPanel>
+        </StackPanel>
+      </Grid>
+
+      <!-- Readings strip: always shown, neutral until a check fills it -->
+      <Border Grid.Row="2" x:Name="Strip" Classes="card" Padding="0" Margin="0,32,0,0">
+        <Grid x:Name="StripGrid" ColumnDefinitions="1.5*,*,*,*" />
+      </Border>
+
+      <!-- Network activity: the internet adapter's traffic over the last minute -->
+      <Border Grid.Row="3" Classes="card" Padding="24,16" Margin="0,16,0,0">
+        <Grid RowDefinitions="Auto,*">
+          <Grid ColumnDefinitions="*,Auto">
+            <!-- One line (user, 2026-11-17): Light title like the DNS name, then a small dot and the connection kind. -->
+            <StackPanel Orientation="Horizontal" Spacing="14">
+              <TextBlock Text="Network Activity" FontSize="22" FontWeight="Light" VerticalAlignment="Center" />
+              <StackPanel x:Name="ActivityKind" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsVisible="False">
+                <Ellipse Width="5" Height="5" Fill="{StaticResource Ink3Brush}" VerticalAlignment="Center" />
+                <TextBlock x:Name="ActivitySub" FontSize="16" Foreground="{StaticResource Ink3Brush}" VerticalAlignment="Center" />
+              </StackPanel>
+            </StackPanel>
+            <!-- Colours only: speeds appear as calm numbers over bumps in the graph (no constantly changing digits). -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="18" VerticalAlignment="Center">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Width="7" Height="7" Fill="{StaticResource DownToBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="Download" FontSize="16" Foreground="{StaticResource Ink2Brush}" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Width="7" Height="7" Fill="{StaticResource UpFromBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="Upload" FontSize="16" Foreground="{StaticResource Ink2Brush}" />
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+          <Panel Grid.Row="1" MinHeight="48">
+            <!-- No top margin: the chart keeps that space as headroom for bump numbers (user, 2026-11-17). -->
+            <nc:ActivityChart x:Name="Activity" />
+            <!-- No scale label: speeds show only as numbers above clear bumps (user, 2026-11-16). -->
+          </Panel>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <!-- Detail view: same centred header, facts as a 2 × 4 grid of tiles so it fits without scrolling -->
+    <Grid x:Name="DetailView" RowDefinitions="Auto,Auto,*" IsVisible="False">
+      <Button Grid.Row="1" x:Name="BackButton" Theme="{StaticResource NcLinkButton}" Padding="2,6,8,6" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,-4,0,0" ZIndex="1">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Path Data="M15,6 L9,12 L15,18" Width="10" Height="14" Stretch="Uniform" StrokeThickness="2" StrokeLineCap="Round"
+                Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" VerticalAlignment="Center" />
+          <TextBlock Text="Back" />
+        </StackPanel>
+      </Button>
+      <StackPanel Grid.Row="1" Spacing="16" HorizontalAlignment="Center" Margin="0,0,0,32">
+        <TextBlock Classes="pageTitle" Text="How This Check Works" />
+      </StackPanel>
+      <!-- One joined card (like the result strip); facts are separated only by hairline dividers. -->
+      <Border Grid.Row="2" Classes="card" Padding="0" VerticalAlignment="Top">
+        <Grid x:Name="Facts" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" />
+      </Border>
+    </Grid>
+  </Panel>
+</UserControl>

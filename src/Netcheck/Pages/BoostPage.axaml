@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Netcheck.Pages.BoostPage">
+  <!-- Direction A (approved 2026-11-16): one sentence, one button, a joined card of what will change.
+       Detail views (each with Back, never nested): Choose myself · Things we don't change.
+       Work view: Applying… → Keep these changes? (15 s) → Done / Nothing changed / Needs a fix. -->
+  <Panel Classes="page">
+
+    <!-- 1. Main -->
+    <StackPanel x:Name="MainView">
+      <StackPanel HorizontalAlignment="Center" Spacing="16">
+        <TextBlock x:Name="MainTitle" Classes="pageTitle" Text="Looking at Your PC…" />
+        <TextBlock x:Name="MainLead" Classes="pageLead" Text="Small fixes that keep your connection steady. Nothing risky." />
+        <!-- What Boost tuned for: the connection carrying the internet (cable or Wi-Fi), P8. -->
+        <Border x:Name="TunedChip" HorizontalAlignment="Center" Padding="12,5" CornerRadius="999"
+                Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" IsVisible="False">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Ellipse Width="7" Height="7" Fill="{StaticResource AccentBrush}" VerticalAlignment="Center" />
+            <TextBlock x:Name="TunedText" FontSize="16" Foreground="{StaticResource Ink2Brush}" VerticalAlignment="Center" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+      <StackPanel x:Name="ApplyRow" HorizontalAlignment="Center" Spacing="8" Margin="0,16,0,0">
+        <Button x:Name="ApplyButton" Theme="{StaticResource NcPrimaryButton}" Classes="big" HorizontalAlignment="Center" IsVisible="False" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6">
+          <TextBlock VerticalAlignment="Center" x:Name="ApplyNote" Classes="meta" />
+          <Button x:Name="ApplyInstall" Theme="{StaticResource NcLinkButton}" Content="Install Netcheck" FontSize="16"
+                  Padding="0,4" VerticalAlignment="Center" IsVisible="False" />
+        </StackPanel>
+      </StackPanel>
+      <Border Classes="card" Padding="0" Margin="0,32,0,0" x:Name="MainCard" IsVisible="False">
+        <StackPanel x:Name="MainRows" />
+      </Border>
+      <!-- Links carry ~15 px of click area and letter space; margin 0 = 16 px visible below the card (measured). -->
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6">
+        <Button x:Name="ChooseLink" Theme="{StaticResource NcLinkButton}" Content="Choose Myself" />
+        <TextBlock Text="·" Foreground="{StaticResource Ink3Brush}" VerticalAlignment="Center" />
+        <Button x:Name="MythsLink" Theme="{StaticResource NcLinkButton}" Content="Things We Don't Change" />
+        <TextBlock x:Name="UndoDot" Text="·" Foreground="{StaticResource Ink3Brush}" VerticalAlignment="Center" IsVisible="False" />
+        <Button x:Name="UndoLink" Theme="{StaticResource NcLinkButton}" Content="Undo My Boost Changes" IsVisible="False" />
+      </StackPanel>
+    </StackPanel>
+
+    <!-- 2. Choose myself -->
+    <Grid x:Name="ChooseView" RowDefinitions="Auto,Auto,Auto,Auto" IsVisible="False">
+      <Button Grid.Row="1" x:Name="ChooseBack" Theme="{StaticResource NcLinkButton}" Padding="2,6,8,6" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,-4,0,0" ZIndex="1">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Path Data="M15,6 L9,12 L15,18" Width="10" Height="14" Stretch="Uniform" StrokeThickness="2" StrokeLineCap="Round"
+                Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" VerticalAlignment="Center" />
+          <TextBlock Text="Back" />
+        </StackPanel>
+      </Button>
+      <TextBlock Grid.Row="1" Classes="pageTitle" Text="Choose Improvements" Margin="0,-8,0,24" />
+      <Border Grid.Row="2" Classes="card" Padding="0">
+        <StackPanel x:Name="ChooseRows" />
+      </Border>
+      <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Margin="0,16,0,0">
+        <CheckBox x:Name="RestoreCheck" Theme="{StaticResource NcCheck}" IsChecked="True">
+          <TextBlock Text="Make a restore point first" FontSize="17" Foreground="{StaticResource Ink2Brush}" />
+        </CheckBox>
+        <!-- Portable copy (P12b): the restore point can't be used there, so its place offers the install. -->
+        <StackPanel x:Name="ChooseInstallRow" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="False">
+          <TextBlock x:Name="ChooseNote" Classes="meta" VerticalAlignment="Center" />
+          <Button x:Name="ChooseInstall" Theme="{StaticResource NcLinkButton}" Content="Install Netcheck" FontSize="16"
+                  Padding="0,4" VerticalAlignment="Center" IsVisible="False" />
+        </StackPanel>
+        <Button x:Name="ChooseApply" Grid.Column="1" Theme="{StaticResource NcPrimaryButton}" />
+      </Grid>
+    </Grid>
+
+    <!-- 3. Things we don't change -->
+    <Grid x:Name="MythsView" RowDefinitions="Auto,Auto,Auto,Auto" IsVisible="False">
+      <Button Grid.Row="1" x:Name="MythsBack" Theme="{StaticResource NcLinkButton}" Padding="2,6,8,6" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,-4,0,0" ZIndex="1">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Path Data="M15,6 L9,12 L15,18" Width="10" Height="14" Stretch="Uniform" StrokeThickness="2" StrokeLineCap="Round"
+                Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" VerticalAlignment="Center" />
+          <TextBlock Text="Back" />
+        </StackPanel>
+      </Button>
+      <TextBlock Grid.Row="1" Classes="pageTitle" Text="Things We Don't Change" />
+      <TextBlock Grid.Row="2" Classes="pageLead" Text="Popular tips that don't help, or can hurt." Margin="0,9,0,26" />
+      <Border Grid.Row="3" Classes="card" Padding="0">
+        <StackPanel x:Name="MythRows" />
+      </Border>
+    </Grid>
+
+    <!-- 4. Work: applying / keep? / done / nothing changed / needs a fix -->
+    <StackPanel x:Name="WorkView" IsVisible="False" HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="16">
+      <TextBlock x:Name="WorkTitle" Classes="pageTitle" />
+      <TextBlock x:Name="WorkLine" Classes="pageLead" />
+      <StackPanel x:Name="WorkButtons" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+        <Button x:Name="WorkPrimary" Theme="{StaticResource NcPrimaryButton}" Classes="big" />
+        <Button x:Name="WorkSecondary" Theme="{StaticResource NcQuietButton}" MinWidth="120" />
+      </StackPanel>
+      <Button x:Name="WorkLink" Theme="{StaticResource NcLinkButton}" HorizontalAlignment="Center" Margin="0,-15,0,0" />
+      <TextBlock x:Name="WorkMeta" Classes="meta" Margin="0,8,0,0" />
+    </StackPanel>
+  </Panel>
+</UserControl>

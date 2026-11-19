@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Version>1.0.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\Netcheck.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Win32" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Skia" Version="12.1.6" />
+    <PackageReference Include="Avalonia.HarfBuzz" Version="12.1.6" />
+    <AvaloniaResource Include="Assets/Netcheck.ico" />
+    <AvaloniaResource Include="Assets/Fonts/*.ttf" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
+    <ProjectReference Include="../Netcheck.Measurements/Netcheck.Measurements.csproj" />
+    <ProjectReference Include="../Netcheck.Windows/Netcheck.Windows.csproj" />
+    <ProjectReference Include="../Netcheck.Storage/Netcheck.Storage.csproj" />
+    <ProjectReference Include="../Netcheck.Optimization/Netcheck.Optimization.csproj" />
+    <ProjectReference Include="../Netcheck.Elevation/Netcheck.Elevation.csproj" />
+    <Content Include="Licenses/*.txt"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- Native NuGet packages include large debugging symbols. Keep symbols in
+       development caches, not in the runnable distribution. -->
+  <Target Name="ExcludePublishSymbols" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+        Condition="'%(ResolvedFileToPublish.Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
+</Project>
+
+
+
