@@ -22,9 +22,9 @@ The only connections Netcheck makes are the ones a check needs (listed under [Wh
 
 ## 📥 Download Netcheck
 
-**Latest version: https://github.com/ShepherdGal/Netcheck/releases/latest.** Download `Netcheck-<version>-win-x64.zip`, unzip it anywhere and open `Netcheck.exe`. Nothing else needs to be installed: everything Netcheck needs is in the download.
+**Latest version: https://github.com/ShepherdGal/Netcheck/releases/latest.** Download **`Netcheck.exe`** and double-click it. It's one file with nothing to unzip and nothing else to install: everything Netcheck needs is inside it. (The `.zip` in each release is the package the installed app uses to update itself.)
 
-- **Use it straight away (portable):** your checks and settings stay in a `Data` folder next to `Netcheck.exe`.
+- **Use it straight away (portable):** your checks and settings stay in a `Netcheck Data` folder next to `Netcheck.exe`.
 - **Install it:** switching DNS and Boost need the installed app, because they change Windows settings and Windows only lets a locked, installed copy do that. Where you need it, Netcheck shows **Install Netcheck**. Windows asks once for permission, Netcheck is copied to `C:\Program Files\Netcheck` with a Start menu entry, and your portable checks come along (copied; the portable folder isn't changed).
 
 *Requires Windows 10 or 11 (64-bit). Netcheck isn't code-signed yet, so the first time you open it Windows may say **Windows protected your PC**: choose **More info → Run anyway**. Each release lists the SHA-256 fingerprint of the download, so you can check that your copy is the one published here.*
@@ -55,12 +55,6 @@ The only connections Netcheck makes are the ones a check needs (listed under [Wh
     <td align="center"><b>Boost</b> · safe settings, always undoable</td>
     <td align="center"><b>History</b> · compare before and after</td>
   </tr>
-  <tr>
-  </tr>
-  <tr>
-    <td align="center"><b>Settings</b> · size, units, your data, updates</td>
-    <td></td>
-  </tr>
 </table>
 
 ## Updates
@@ -78,7 +72,7 @@ The installed app can look for a newer version on GitHub at most once a day (you
 ## What it sends over the internet
 
 - **Speed test:** downloads and uploads test data to Cloudflare's public speed test service (`speed.cloudflare.com`) for about 8 seconds each way. On a fast connection a check uses up to about 1 GB, so avoid it on a capped mobile plan. Like any visit to that service, Cloudflare sees your IP address (see [Cloudflare's privacy policy](https://www.cloudflare.com/privacypolicy/)).
-- **Ping and ping loss:** small pings to large public services (Cloudflare 1.1.1.1, Google 8.8.8.8, OpenDNS 208.67.222.222).
+- **Ping and ping loss:** small pings to large public services (Cloudflare 1.1.1.1, Google 8.8.8.8, Quad9 9.9.9.9).
 - **DNS race:** small name lookups sent to the DNS services being compared, encrypted for services that offer private lookups.
 - **Update check:** reads the release list from GitHub. A release downloads only when you click **Update Now**.
 
@@ -88,6 +82,6 @@ Netcheck is an independent project. It isn't made, endorsed or supported by Clou
 
 ## License
 
-Netcheck is free and open source under the [MIT License](LICENSE) (copyright 2026 ShepherdGal): you may use, copy, modify and share it, and it comes without warranty. It uses open-source components (Avalonia, SkiaSharp, HarfBuzz, Microsoft.Data.Sqlite, .NET, the Inter font and others); their licenses are in the `Licenses` folder of every download.
+Netcheck is free and open source under the [MIT License](LICENSE) (copyright 2026 ShepherdGal): you may use, copy, modify and share it, and it comes without warranty. It uses open-source components (Avalonia, SkiaSharp, HarfBuzz, Microsoft.Data.Sqlite, .NET, the Inter font and others); their licenses are inside the app: **Settings → Open-source licences → Show**.
 
 Developers: see [docs/DEVELOPING.md](docs/DEVELOPING.md).

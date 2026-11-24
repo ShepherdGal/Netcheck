@@ -2,6 +2,15 @@
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
+  <!-- Released files carry no local paths: no debug-file location in any DLL, and source paths (compiler-generated
+       caller paths, if any) mapped to a neutral root. -->
+  <PropertyGroup>
+    <PathMap>$(MSBuildThisFileDirectory)=/Netcheck/</PathMap>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
   <!-- Upgrade/rollback test builds only: -p:NetcheckTestFeed=true points the update check at a local fixture feed. -->
   <PropertyGroup Condition="'$(NetcheckTestFeed)' == 'true'">
     <DefineConstants>$(DefineConstants);NETCHECK_TEST_FEED</DefineConstants>

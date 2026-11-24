@@ -30,6 +30,9 @@ internal sealed partial class WindowsTweakPlatform
         TweakId.PreferredBand => ["RoamingPreferredBandType", "PreferredBand", "BandPreference"],
         TweakId.MimoPowerSave => ["MIMOPowerSaveMode", "MimoPowerSaveMode"],
         TweakId.RoamingAggressiveness => ["RoamAggressiveness", "RoamingAggressiveness"],
+        TweakId.ReceiveSideScaling => ["*RSS"],
+        TweakId.SpeedDuplex => ["*SpeedDuplex"],
+        TweakId.PacketCoalescing => ["*PacketCoalescing"],
         _ => [],
     };
 
@@ -44,6 +47,8 @@ internal sealed partial class WindowsTweakPlatform
                                      !l.Contains("2.4", StringComparison.Ordinal) && !l.Contains("6G", StringComparison.Ordinal) && !l.Contains("6 G", StringComparison.Ordinal),
             TweakId.MimoPowerSave => l.Contains("NO SMPS", StringComparison.Ordinal),
             TweakId.RoamingAggressiveness => l.Contains("MEDIUM", StringComparison.Ordinal) && !l.Contains("-", StringComparison.Ordinal),
+            // "Auto Negotiation" / "Auto Negotiate" — never a fixed speed that only mentions auto ("1.0 Gbps Full Duplex").
+            TweakId.SpeedDuplex => l.Contains("AUTO", StringComparison.Ordinal) && !l.Any(char.IsAsciiDigit),
             _ => false,
         };
     }
@@ -59,10 +64,36 @@ internal sealed partial class WindowsTweakPlatform
         var values = property["ValidRegistryValues"] as string[] ?? [];
         if (labels.Length != values.Length)
             return null;
+        if (id == TweakId.SpeedDuplex && !CappedSpeed(labels, values, RegistryNumber(property)))
+            return null;                       // auto already, or fixed at the card's top speed: nothing to fix
         for (var i = 0; i < labels.Length; i++)
             if (IsTargetLabel(id, labels[i]) && long.TryParse(values[i], NumberStyles.Integer, CultureInfo.InvariantCulture, out var v))
                 return v;
         return null;
+    }
+
+    /// <summary>
+    /// A cable speed fixed by hand that holds the card back: below the fastest speed the driver lists, or half duplex.
+    /// Fixed at the top speed (seen live: "2.5 Gbps Full Duplex" on a 2.5 GbE card) is a choice, not a fault.
+    /// </summary>
+    internal static bool CappedSpeed(string[] labels, string[] values, long current)
+    {
+        var index = Array.IndexOf(values, current.ToString(CultureInfo.InvariantCulture));
+        if (index < 0 || IsTargetLabel(TweakId.SpeedDuplex, labels[index]))
+            return false;
+        var fastest = labels.Select(SpeedMbps).DefaultIfEmpty(0).Max();
+        return labels[index].Contains("HALF", StringComparison.OrdinalIgnoreCase) || SpeedMbps(labels[index]) < fastest;
+    }
+
+    /// <summary>"100 Mbps Full Duplex" → 100, "2.5 Gbps Full Duplex" → 2500; 0 when the label names no speed.</summary>
+    internal static double SpeedMbps(string label)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(label, @"(\d+(?:\.\d+)?)\s*([MG])b(?:ps|/s)",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (!match.Success)
+            return 0;
+        var number = double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+        return char.ToUpperInvariant(match.Groups[2].Value[0]) == 'G' ? number * 1000 : number;
     }
 
     private static long ReadAdded(TweakId id, Guid scope)

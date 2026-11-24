@@ -56,6 +56,7 @@ public sealed partial class SettingsPage : UserControl
             Updater.Open(AppPaths.DataDirectory);
         };
         ClearLink.Click += async (_, _) => await ClearHistoryAsync();
+        LicencesButton.Click += (_, _) => ShowLicences();
         CheckNowLink.Click += async (_, _) => await Updater.CheckAsync();
         AutoSwitch.IsCheckedChanged += (_, _) =>
         {
@@ -74,6 +75,20 @@ public sealed partial class SettingsPage : UserControl
     }
 
     private MainWindow? Window => TopLevel.GetTopLevel(this) as MainWindow;
+
+    /// <summary>Writes the licence texts carried inside the exe to one temporary text file and opens it.</summary>
+    private static void ShowLicences()
+    {
+        try
+        {
+            var path = Path.Combine(Path.GetTempPath(), "Netcheck open-source licences.txt");
+            File.WriteAllText(path, NativeLibraries.Licences());
+            Updater.Open(path);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
 
     private void SetUnits()
     {

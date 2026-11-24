@@ -14,7 +14,11 @@ internal static class Program
         if (OperatingSystem.IsWindows() && args.FirstOrDefault() == Elevation.WindowsDnsBroker.Switch)
             return Elevation.WindowsDnsBroker.RunAsync(args).GetAwaiter().GetResult();
         if (OperatingSystem.IsWindows() && args.FirstOrDefault() == Elevation.WindowsTweakBroker.Switch)
+        {
+            // The Boost helper needs Windows management (CIM) only; graphics are never loaded elevated by a helper.
+            NativeLibraries.Prepare(Elevation.WindowsInstaller.IsElevated, NativeLibraries.Management);
             return Elevation.WindowsTweakBroker.RunAsync(args).GetAwaiter().GetResult();
+        }
         if (OperatingSystem.IsWindows() && args.FirstOrDefault() == Elevation.WindowsInstaller.BrokerSwitch)
             return Elevation.WindowsInstaller.RunBrokerAsync(args).GetAwaiter().GetResult();
         if (OperatingSystem.IsWindows() && args.FirstOrDefault() == Elevation.WindowsInstaller.SetupSwitch)
@@ -24,6 +28,7 @@ internal static class Program
             // Before asking Windows for permission: offer to undo a DNS switch or Boost change still in place.
             if (!Elevation.WindowsInstaller.IsElevated && Elevation.WindowsInstaller.CanUpdate && UninstallWindow.HasChanges)
             {
+                NativeLibraries.Prepare(elevated: false);
                 App.ShowUninstall = true;
                 BuildApp().StartWithClassicDesktopLifetime(args);
                 if (!App.UninstallConfirmed)
@@ -37,6 +42,9 @@ internal static class Program
         if (OperatingSystem.IsWindows() && instance is null)
             return 0;
 
+        // One-file build: graphics libraries checked and loaded from a folder that fits who runs this (P14).
+        if (OperatingSystem.IsWindows())
+            NativeLibraries.Prepare(Elevation.WindowsInstaller.IsElevated);
         try
         {
             return BuildApp().StartWithClassicDesktopLifetime(args);

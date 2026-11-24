@@ -62,6 +62,12 @@ internal static class TweakChecks
         Require(!TweakRules.Valid(new(TweakId.GreenEthernet, Guid.Empty, 0)), "adapter tweak without adapter rejected");
         Require(!TweakRules.Valid(new(TweakId.PreferredBand, Nic, 256)) && !TweakRules.Valid(new(TweakId.PreferredBand, Nic, null)), "driver values stay small and set");
         Require(TweakRules.MaxBatch >= 16, "a full Boost list fits one batch");
+        // P15: RSS / packet coalescing on-off only; cable speed is driver-mapped with room for large codes.
+        Require(TweakRules.Target(TweakId.ReceiveSideScaling) == 1 && TweakRules.Target(TweakId.PacketCoalescing) == 0 &&
+                TweakRules.Valid(new(TweakId.ReceiveSideScaling, Nic, 1)) && !TweakRules.Valid(new(TweakId.PacketCoalescing, Nic, 2)),
+                "RSS on, packet coalescing off, on/off only");
+        Require(TweakRules.DriverMapped(TweakId.SpeedDuplex) && TweakRules.Valid(new(TweakId.SpeedDuplex, Nic, 2500)) &&
+                !TweakRules.Valid(new(TweakId.SpeedDuplex, Guid.Empty, 0)), "cable speed: driver value, adapter-scoped");
         if (OperatingSystem.IsWindows())
         {
             // Driver labels: the target is the label that means what Boost promises, never a near miss.
@@ -75,6 +81,16 @@ internal static class TweakChecks
             Require(Netcheck.Elevation.WindowsTweakPlatform.IsTargetLabel(TweakId.RoamingAggressiveness, "3. Medium") &&
                     !Netcheck.Elevation.WindowsTweakPlatform.IsTargetLabel(TweakId.RoamingAggressiveness, "2. Medium-Low") &&
                     !Netcheck.Elevation.WindowsTweakPlatform.IsTargetLabel(TweakId.RoamingAggressiveness, "4. Medium-High"), "roaming: Medium only");
+            Require(Netcheck.Elevation.WindowsTweakPlatform.IsTargetLabel(TweakId.SpeedDuplex, "Auto Negotiation") &&
+                    !Netcheck.Elevation.WindowsTweakPlatform.IsTargetLabel(TweakId.SpeedDuplex, "1.0 Gbps Full Duplex") &&
+                    !Netcheck.Elevation.WindowsTweakPlatform.IsTargetLabel(TweakId.SpeedDuplex, "100 Mbps Full Duplex"), "cable speed: Auto only");
+            string[] speeds = ["Auto Negotiation", "100 Mbps Half Duplex", "100 Mbps Full Duplex", "1.0 Gbps Full Duplex", "2.5 Gbps Full Duplex"];
+            string[] codes = ["0", "3", "4", "6", "2500"];
+            Require(Netcheck.Elevation.WindowsTweakPlatform.CappedSpeed(speeds, codes, 6) &&
+                    Netcheck.Elevation.WindowsTweakPlatform.CappedSpeed(speeds, codes, 3) &&
+                    !Netcheck.Elevation.WindowsTweakPlatform.CappedSpeed(speeds, codes, 2500) &&
+                    !Netcheck.Elevation.WindowsTweakPlatform.CappedSpeed(speeds, codes, 0),
+                    "cable speed offered only when fixed below the top speed or at half duplex");
         }
         Console.WriteLine("PASS P8 tweak rules (scheme scope, ranges, driver labels)");
         return 0;

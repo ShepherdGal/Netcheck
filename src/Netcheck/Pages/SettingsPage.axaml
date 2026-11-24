@@ -136,6 +136,18 @@
             </Grid>
           </Border>
 
+          <!-- Open-source licences (P14): the texts ship inside Netcheck.exe; Show opens them as one text file. -->
+          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
+              <StackPanel Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="Open-source licences" />
+                <TextBlock Classes="rowHint" Text="The free software Netcheck is built with, and its terms." />
+              </StackPanel>
+              <Button Grid.Column="1" x:Name="LicencesButton" Theme="{StaticResource NcQuietButton}" Content="Show"
+                      MinWidth="96" VerticalAlignment="Center" />
+            </Grid>
+          </Border>
+
           <!-- Version: installed / update ready / updating / portable / development -->
           <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">

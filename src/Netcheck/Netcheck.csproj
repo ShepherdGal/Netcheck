@@ -21,9 +21,28 @@
     <ProjectReference Include="../Netcheck.Storage/Netcheck.Storage.csproj" />
     <ProjectReference Include="../Netcheck.Optimization/Netcheck.Optimization.csproj" />
     <ProjectReference Include="../Netcheck.Elevation/Netcheck.Elevation.csproj" />
-    <Content Include="Licenses/*.txt"
-             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- Licence texts live inside the exe (P14); Settings → Open-Source Licences shows them. -->
+    <EmbeddedResource Include="Licenses/*.txt" LogicalName="Licenses/%(Filename)%(Extension)" />
   </ItemGroup>
+  <!-- One-file build (P14): the native libraries ride inside Netcheck.dll as resources and are unpacked by
+       NativeLibraries.cs after a SHA-256 check (never to %TEMP%), so the published folder holds only Netcheck.exe. -->
+  <PropertyGroup>
+    <NetcheckNatives>;libskiasharp.dll;libharfbuzzsharp.dll;av_libglesv2.dll;microsoft.management.infrastructure.native.unmanaged.dll;</NetcheckNatives>
+  </PropertyGroup>
+  <Target Name="EmbedNativeLibraries" AfterTargets="ResolvePackageAssets" BeforeTargets="PrepareResources">
+    <ItemGroup>
+      <_NetcheckNativeFound Include="@(NativeCopyLocalItems)"
+        Condition="$(NetcheckNatives.Contains(';$([System.String]::Copy('%(NativeCopyLocalItems.Filename)%(NativeCopyLocalItems.Extension)').ToLowerInvariant());'))" />
+      <EmbeddedResource Include="@(_NetcheckNativeFound)" LogicalName="Native/%(Filename)%(Extension)" WithCulture="false" Type="Non-Resx" />
+    </ItemGroup>
+    <Error Condition="'@(_NetcheckNativeFound->Count())' != '4'" Text="Expected 4 native libraries to embed, found: @(_NetcheckNativeFound->'%(Filename)%(Extension)')." />
+  </Target>
+  <Target Name="ExcludeEmbeddedNatives" AfterTargets="ComputeFilesToPublish" Condition="'$(PublishSingleFile)' == 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+        Condition="$(NetcheckNatives.Contains(';$([System.String]::Copy('%(ResolvedFileToPublish.Filename)%(ResolvedFileToPublish.Extension)').ToLowerInvariant());'))" />
+    </ItemGroup>
+  </Target>
   <!-- Native NuGet packages include large debugging symbols. Keep symbols in
        development caches, not in the runnable distribution. -->
   <Target Name="ExcludePublishSymbols" AfterTargets="ComputeFilesToPublish">

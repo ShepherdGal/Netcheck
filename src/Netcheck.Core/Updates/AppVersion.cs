@@ -55,6 +55,19 @@ public sealed class AppVersion : IComparable<AppVersion>, IEquatable<AppVersion>
         try
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+            return ReadFromAssembly(stream);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>The same, from assembly bytes (e.g. Netcheck.dll read out of a one-file Netcheck.exe).</summary>
+    public static AppVersion? ReadFromAssembly(Stream stream)
+    {
+        try
+        {
             using var pe = new System.Reflection.PortableExecutable.PEReader(stream);
             if (!pe.HasMetadata)
                 return null;

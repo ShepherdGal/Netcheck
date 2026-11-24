@@ -41,7 +41,8 @@ public static class WindowsInstaller
     private const string PipePrefix = "Netcheck.Update";
     internal const string JournalName = "update-journal.json";
     private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\Netcheck";
-    private static readonly string[] Required = ["Netcheck.exe", "Netcheck.dll", "Netcheck.runtimeconfig.json", "Netcheck.Elevation.dll"];
+    // One file (P14): Netcheck.exe holds everything. A 1.0 folder (Netcheck.dll beside it) still counts, for "Go back".
+    private static readonly string[] Required = ["Netcheck.exe"];
     private const string PortableMarker = "Netcheck.portable";
 
     private static string ProgramFiles => Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
@@ -49,6 +50,13 @@ public static class WindowsInstaller
     public static string PreviousDirectory => Path.Combine(ProgramFiles, "Netcheck Previous");
     private static string HoldDirectory => Path.Combine(ProgramFiles, "Netcheck Previous.new");
     private static string UpdateStaging => Path.Combine(ProgramFiles, "Netcheck Update");
+
+    /// <summary>
+    /// Where an elevated Netcheck keeps the native libraries it unpacks from its one-file exe: inside the admin-only
+    /// recovery folder, so nothing a normal program can write is ever loaded with administrator rights.
+    /// </summary>
+    public static string ProtectedLibraryDirectory() =>
+        Path.Combine(BrokerHost.OpenRecoveryDirectory(out _).FullName, "Libraries");
 
     /// <summary>True when this process already runs with administrator rights.</summary>
     public static bool IsElevated => IsAdministrator();
@@ -112,12 +120,15 @@ public static class WindowsInstaller
 
     private static async Task<InstallResult> RequestAsync(Request request, CancellationToken token)
     {
+        // The broker swaps Netcheck.exe under this running copy too; it still has to read the reply and restart.
+        await Task.Run(PinProgram, CancellationToken.None).ConfigureAwait(false);
         try
         {
             var result = await BrokerHost.ExchangeAsync<InstallResult>(BrokerSwitch, PipePrefix, async (pipe, deadline) =>
             {
                 await DnsBrokerPipe.SendAsync(pipe, request, deadline).ConfigureAwait(false);
                 var reply = await DnsBrokerPipe.ReceiveAsync<Reply>(pipe, deadline).ConfigureAwait(false);
+                Trace($"client: reply {reply.Outcome} '{reply.Reason}'");
                 return new InstallResult(Enum.IsDefined(reply.Outcome) ? reply.Outcome : InstallOutcome.RecoveryRequired,
                     reply.Reason is { Length: <= 600 } r ? r : "");
             }, token).ConfigureAwait(false);
@@ -130,8 +141,51 @@ public static class WindowsInstaller
         catch (Exception error) when (error is IOException or Win32Exception or JsonException or InvalidOperationException or
             OperationCanceledException or UnauthorizedAccessException)
         {
-            return new(Interrupted ? InstallOutcome.RecoveryRequired : InstallOutcome.NothingChanged, error.Message);
+            Trace($"client: {error}");
+            return new(Interrupted ? InstallOutcome.RecoveryRequired : InstallOutcome.NothingChanged,
+                $"{error.GetType().Name}: {error.Message}");
         }
+    }
+
+    /// <summary>
+    /// One-file build (P14): an assembly is read out of Netcheck.exe the first time it is needed. An update, Go back or
+    /// uninstall moves Netcheck.exe away while this copy still runs, and a first use after that fails (seen live
+    /// 2026-11-24: right after a committed swap, registering the new version needed System.Linq.Expressions and got
+    /// FileNotFoundException, so a finished update was reported as "Nothing changed"). Loading every assembly first
+    /// keeps them all available. The list comes from the exe's own table of contents: in a one-file app the runtime's
+    /// trusted-assembly list holds only the exe itself.
+    /// </summary>
+    public static int PinProgram()
+    {
+#pragma warning disable IL3000 // An empty Location is how a one-file app is recognised.
+        if (!string.IsNullOrEmpty(typeof(WindowsInstaller).Assembly.Location) || Environment.ProcessPath is not { } exe)
+            return 0;
+#pragma warning restore IL3000
+        var loaded = 0;
+        foreach (var file in OneFileBundle.ListFiles(exe))
+        {
+            if (!file.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || file.Contains('/') || file.Contains('\\'))
+                continue;
+            try
+            {
+                System.Reflection.Assembly.Load(new System.Reflection.AssemblyName(Path.GetFileNameWithoutExtension(file)));
+                loaded++;
+            }
+            catch (Exception error) when (error is IOException or BadImageFormatException or ArgumentException) { }
+        }
+        return loaded;
+    }
+
+    /// <summary>Test-feed builds only: a step-by-step trace of updates (user's temp folder), to see where one stops.</summary>
+    [System.Diagnostics.Conditional("NETCHECK_TEST_FEED")]
+    internal static void Trace(string text)
+    {
+        try
+        {
+            File.AppendAllText(Path.Combine(Path.GetTempPath(), "Netcheck-update-trace.txt"),
+                $"{DateTime.Now:HH:mm:ss.fff} [{Environment.ProcessId}{(IsAdministrator() ? " admin" : "")}] {text}{Environment.NewLine}");
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
     }
 
     // ---------------------------------------------------------------- elevated: setup (portable → Program Files)
@@ -146,15 +200,16 @@ public static class WindowsInstaller
             return Fail(pid, "this copy is already the installed one");
         if (install.Exists)
             return 3;
-        if (!Required.All(name => File.Exists(Path.Combine(source.FullName, name))))
-            return Fail(pid, "this folder isn't a complete Netcheck");
+        if (!Complete(source.FullName))
+            return Fail(pid, "this isn't a complete Netcheck");
 
         var staging = new DirectoryInfo(Path.Combine(ProgramFiles, "Netcheck Setup " + Guid.NewGuid().ToString("N")));
         try
         {
             staging.Create(InstallSecurity());
-            CopyTree(source, staging, root: true);
-            if (!Required.All(name => File.Exists(Path.Combine(staging.FullName, name))))
+            // Only the program itself: the portable exe may sit in Downloads beside anything else.
+            CopyProgram(source, staging);
+            if (!Complete(staging.FullName))
                 throw new IOException("required files missing after copy");
             Directory.Move(staging.FullName, install.FullName);
             // `install` cached "doesn't exist" above; a stale cache reads Attributes as -1 (every flag, even ReparsePoint).
@@ -220,27 +275,16 @@ public static class WindowsInstaller
         }
     }
 
-    private static void CopyTree(DirectoryInfo from, DirectoryInfo to, bool root)
+    private static void CopyProgram(DirectoryInfo from, DirectoryInfo to)
     {
-        foreach (var entry in from.EnumerateFileSystemInfos())
-        {
-            if ((entry.Attributes & FileAttributes.ReparsePoint) != 0)
-                throw new IOException($"unexpected link at {entry.FullName}");
-            // Portable data and the portable marker stay with the portable copy.
-            if (root && (entry.Name.Equals("Data", StringComparison.OrdinalIgnoreCase) && entry is DirectoryInfo ||
-                         entry.Name.Equals(PortableMarker, StringComparison.OrdinalIgnoreCase)))
-                continue;
-            var target = Path.Combine(to.FullName, entry.Name);
-            if (entry is DirectoryInfo directory)
-                CopyTree(directory, Directory.CreateDirectory(target), root: false);
-            else
-            {
-                File.Copy(entry.FullName, target);
-                if (!Hash(entry.FullName).SequenceEqual(Hash(target)))
-                    throw new IOException($"copy mismatch at {target}");
-                SetOwner(new FileInfo(target));
-            }
-        }
+        var exe = new FileInfo(Path.Combine(from.FullName, "Netcheck.exe"));
+        if ((exe.Attributes & FileAttributes.ReparsePoint) != 0)
+            throw new IOException($"unexpected link at {exe.FullName}");
+        var target = Path.Combine(to.FullName, exe.Name);
+        exe.CopyTo(target);
+        if (!Hash(exe.FullName).SequenceEqual(Hash(target)))
+            throw new IOException($"copy mismatch at {target}");
+        SetOwner(new FileInfo(target));
         SetOwner(to);
     }
 
@@ -253,16 +297,22 @@ public static class WindowsInstaller
             Reply reply;
             try
             {
+                // Not inside Trace(...): that call (and its arguments) only exists in test-feed builds.
+                var pinned = PinProgram();
+                Trace($"broker: request {request.Op} {request.Target}, pinned {pinned} assemblies");
                 reply = await ServeAsync(request, token).ConfigureAwait(false);
             }
-            catch (Exception error) when (error is IOException or UnauthorizedAccessException or HttpRequestException or
-                InvalidDataException or JsonException or CryptographicException or FormatException or
-                TaskCanceledException or InvalidOperationException)
+            catch (Exception error)
             {
-                reply = new Reply(Interrupted ? InstallOutcome.RecoveryRequired : InstallOutcome.NothingChanged, Short(error.Message));
+                Trace($"broker: {error}");
+                // Top level of a short-lived elevated helper: report every failure, with its type, to the app.
+                reply = new Reply(Interrupted ? InstallOutcome.RecoveryRequired : InstallOutcome.NothingChanged,
+                    Short($"{error.GetType().Name}: {error.Message}"));
             }
             using var replyDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            Trace($"broker: reply {reply.Outcome} '{reply.Reason}'");
             await DnsBrokerPipe.SendAsync(pipe, reply, replyDeadline.Token).ConfigureAwait(false);
+            Trace("broker: reply sent");
         });
 
     private static async Task<Reply> ServeAsync(Request request, CancellationToken token)
@@ -278,9 +328,8 @@ public static class WindowsInstaller
         if (request is { Op: "previous", Target: null, Package: null })
         {
             var previous = new DirectoryInfo(PreviousDirectory);
-            if (!previous.Exists || !Required.All(n => File.Exists(Path.Combine(previous.FullName, n))) ||
-                !BrokerHost.ProtectedPath(previous) || !BrokerHost.ProtectedContents(previous) ||
-                VersionOf(previous.FullName) is null)
+            if (!previous.Exists || !Complete(previous.FullName) ||
+                !BrokerHost.ProtectedPath(previous) || !BrokerHost.ProtectedContents(previous))
                 return new(InstallOutcome.NothingChanged, "no earlier version is kept");
             return Swap(previous.FullName);
         }
@@ -311,11 +360,23 @@ public static class WindowsInstaller
             return Abandon(new(InstallOutcome.NothingChanged, "the download didn't match the release fingerprint"));
 
         var files = Directory.CreateDirectory(Path.Combine(staging.FullName, "files"));
+        Trace("broker: package checked, extracting");
         Extract(copy, files);
-        if (!Required.All(n => File.Exists(Path.Combine(files.FullName, n))) || VersionOf(files.FullName) is not { } got ||
-            !got.Equals(target) || !HasProtectedDeploymentMarker(Path.Combine(files.FullName, "Netcheck.dll")))
+        // The package also carries a 1.0-style folder for 1.0.0 updaters; a one-file install keeps only the exe.
+        foreach (var entry in files.EnumerateFileSystemInfos())
+        {
+            if (entry.Name.Equals("Netcheck.exe", StringComparison.OrdinalIgnoreCase))
+                continue;
+            if (entry is DirectoryInfo directory)
+                directory.Delete(recursive: true);
+            else
+                entry.Delete();
+        }
+        if (!Complete(files.FullName) || VersionOf(files.FullName) is not { } got || !got.Equals(target))
             return Abandon(new(InstallOutcome.NothingChanged, "the package isn't a complete Netcheck"));
+        Trace($"broker: complete, swapping (version {VersionOf(files.FullName)})");
         var result = Swap(files.FullName);
+        Trace($"broker: swap {result.Outcome} '{result.Reason}'");
         TryDelete(UpdateStaging);
         return result;
 
@@ -369,12 +430,12 @@ public static class WindowsInstaller
             journal.Write("verify");
             // Read back and verify.
             var version = VersionOf(install);
-            if (version is null || !Required.All(n => File.Exists(Path.Combine(install, n))) ||
-                !BrokerHost.ProtectedContents(new DirectoryInfo(install)))
+            if (version is null || !Complete(install) || !BrokerHost.ProtectedContents(new DirectoryInfo(install)))
                 throw new InvalidDataException("the new files didn't verify");
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidDataException)
         {
+            Trace($"broker: swap failed, restoring: {error}");
             return Recover() ? new(InstallOutcome.NothingChanged, Short(error.Message))
                 : new(InstallOutcome.RecoveryRequired, Short(error.Message));
         }
@@ -384,14 +445,26 @@ public static class WindowsInstaller
         var installed = VersionOf(install)!;
         try
         {
+            Trace("broker: verified, committing");
             journal.Write("commit");
             CommitPrevious();
             journal.Delete();
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
+            Trace($"broker: commit incomplete: {error}");
         }
-        Register(installed);
+        Trace("broker: committed, registering");
+        try
+        {
+            Register(installed);
+            Trace("broker: registered");
+        }
+        catch (Exception error)
+        {
+            // The new version is in place and verified: the Start menu / Apps entry is cosmetic and never undoes it.
+            Trace($"broker: register failed: {error}");
+        }
         return new(InstallOutcome.Done, installed.ToString());
     }
 
@@ -490,6 +563,7 @@ public static class WindowsInstaller
     {
         if (!CanUpdate)
             return 1;
+        PinProgram();   // the uninstall moves this very exe away
         if (!IsAdministrator())
         {
             try
@@ -592,16 +666,30 @@ public static class WindowsInstaller
     {
         // From metadata, not FileVersionInfo: after a swap the helper still has the old Netcheck.dll loaded from this
         // very path, and the Windows version API returned that loaded module's version (seen in the live test).
+        // A 1.0 folder has Netcheck.dll beside the exe; a one-file Netcheck.exe (P14) carries it inside.
         var dll = Path.Combine(directory, "Netcheck.dll");
-        return File.Exists(dll) ? AppVersion.ReadFromAssembly(dll) : null;
+        if (File.Exists(dll))
+            return AppVersion.ReadFromAssembly(dll);
+        return ProgramAssembly(directory) is { } bytes ? AppVersion.ReadFromAssembly(new MemoryStream(bytes)) : null;
     }
 
-    /// <summary>A package that lacks the protected-deployment marker could never run the broker again (no way back).</summary>
-    private static bool HasProtectedDeploymentMarker(string dll)
+    /// <summary>Netcheck.dll's bytes: the loose 1.0 file, or the copy inside a one-file Netcheck.exe.</summary>
+    private static byte[]? ProgramAssembly(string directory)
     {
-        var bytes = File.ReadAllBytes(dll);
-        return bytes.AsSpan().IndexOf("Netcheck.ProtectedDeployment"u8) >= 0;
+        var dll = Path.Combine(directory, "Netcheck.dll");
+        if (File.Exists(dll))
+            return File.ReadAllBytes(dll);
+        var exe = Path.Combine(directory, "Netcheck.exe");
+        return File.Exists(exe) ? OneFileBundle.ReadFile(exe, "Netcheck.dll") : null;
     }
+
+    /// <summary>
+    /// A complete Netcheck: the exe, a readable version and the protected-deployment marker (a package without it
+    /// could never run the broker again, so there would be no way back).
+    /// </summary>
+    internal static bool Complete(string directory) =>
+        Required.All(n => File.Exists(Path.Combine(directory, n))) && VersionOf(directory) is not null &&
+        ProgramAssembly(directory) is { } bytes && bytes.AsSpan().IndexOf("Netcheck.ProtectedDeployment"u8) >= 0;
 
     private static DirectorySecurity InstallSecurity()
     {

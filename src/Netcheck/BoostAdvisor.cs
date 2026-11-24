@@ -73,12 +73,15 @@ internal static class BoostAdvisor
         (TweakId.SelectiveSuspend, "Don't let the USB network adapter sleep", "USB adapters that nap often drop the connection.", "The USB adapter stays awake", false, Fit.Usb),
         (TweakId.NicPowerSaving, "Keep the network card awake", "Stops Windows turning it off to save power.", "Network card stays awake", false, Fit.Any),
         (TweakId.PcieLinkPower, "Keep the network card's connection awake{plugged}", "The PC's internal link to the card doesn't sleep. Waking it adds delay.", "The card's connection stays awake{plugged}", false, Fit.Any),
+        (TweakId.SpeedDuplex, "Let the cable pick its full speed", "The cable speed was fixed by hand, which can cap you below your plan. Auto lets the card and router agree on the fastest speed.", "The cable picks its own speed", false, Fit.Cable),
+        (TweakId.ReceiveSideScaling, "Spread network work across the CPU", "Receive Side Scaling was off, so one CPU core handles all traffic. Windows turns it on by default.", "Network work is spread across the CPU", false, Fit.Any),
         (TweakId.RoamingAggressiveness, "Wi-Fi roaming back to normal", "Someone changed how eagerly Wi-Fi hops between access points. Medium is Intel's advice.", "Wi-Fi roaming is normal", false, Fit.WiFi),
         (TweakId.BackgroundUpdates, "Keep Windows updates in the background", "Big updates won't slow your games or calls.", "Updates already have a speed limit", false, Fit.Any),
         (TweakId.AutoTuning, "Normal download tuning", "Lets Windows size downloads to your speed.", "Download tuning is normal", false, Fit.Any),
         (TweakId.UpdateSharing, "Stop sharing updates over the internet", "Your upload stays free for you.", "Updates aren't shared over the internet", false, Fit.Any),
         (TweakId.PreferredBand, "Prefer the faster Wi-Fi band", "Connects on 5 GHz when your router offers it. Range is shorter than 2.4 GHz.", "Wi-Fi already prefers 5 GHz", true, Fit.WiFi),
         (TweakId.MimoPowerSave, "Use all Wi-Fi antennas", "Keeps every antenna on instead of switching some off to save power.", "All Wi-Fi antennas stay on", true, Fit.WiFi),
+        (TweakId.PacketCoalescing, "Don't hold packets back", "The card collects packets in batches to save power. Off hands them over at once; uses a little more power.", "Packets aren't held back", true, Fit.Any),
         (TweakId.InterruptModeration, "Lowest-latency network card mode", "Hands each packet to Windows straight away. For competitive games; uses a little more CPU.", "Lowest-latency mode is on", true, Fit.Any),
         (TweakId.Ecn, "Smoother busy networks (ECN)", "Can help on busy networks. Some routers ignore it.", "Busy-network signals are on", true, Fit.Any),
         (TweakId.MediaThrottling, "Remove the media network limit", "Very small effect on most PCs.", "Media network limit is off", true, Fit.Any),
@@ -138,8 +141,10 @@ internal static class BoostAdvisor
                 TweakId.MediaThrottling => current.Value != TweakRules.ThrottlingOff,
                 TweakId.WifiPowerSaving or TweakId.PcieLinkPower => current.Value != 0,
                 TweakId.GreenEthernet or TweakId.PowerSavingMode or TweakId.AdvancedEee or TweakId.SelectiveSuspend or
-                    TweakId.InterruptModeration => current.Value == 1,
-                TweakId.PreferredBand or TweakId.MimoPowerSave or TweakId.RoamingAggressiveness => current.Value != targetValue,
+                    TweakId.InterruptModeration or TweakId.PacketCoalescing => current.Value == 1,
+                TweakId.ReceiveSideScaling => current.Value == 0,
+                TweakId.PreferredBand or TweakId.MimoPowerSave or TweakId.RoamingAggressiveness or TweakId.SpeedDuplex =>
+                    current.Value != targetValue,
                 _ => false,
             };
             items.Add(new BoostItem(id, nameText.Replace("{plugged}", plugged, StringComparison.Ordinal), reason,

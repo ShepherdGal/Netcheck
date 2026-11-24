@@ -23,6 +23,10 @@ public enum TweakId
     PreferredBand,           // Wi-Fi adapter preferred band: one of the driver's own registry values
     MimoPowerSave,           // Wi-Fi adapter MIMO power save mode: one of the driver's own registry values
     RoamingAggressiveness,   // Wi-Fi adapter roaming aggressiveness: one of the driver's own registry values
+    // ---- added P15 (2026-11-24): real faults found on PCs, each a standard NDIS keyword ----
+    ReceiveSideScaling,      // Adapter *RSS: 0 off, 1 on (Microsoft: on by default; off puts all traffic on one CPU core)
+    SpeedDuplex,             // Adapter *SpeedDuplex: one of the driver's values; the target is its "Auto Negotiation"
+    PacketCoalescing,        // Adapter *PacketCoalescing: 0 off, 1 on (batches packets to save power; adds delay)
 }
 
 /// <summary>One setting: the tweak, its adapter (empty for system-wide tweaks) and its value (null = not set).</summary>
@@ -37,7 +41,7 @@ public enum RestorePointResult { NotRequested, Made, Skipped, Off, Failed }
 public static class TweakRules
 {
     public const long ThrottlingOff = 0xFFFFFFFF;
-    public const int MaxBatch = 16;
+    public const int MaxBatch = 20;
 
     /// <summary>Tweaks whose <see cref="TweakValue.Adapter"/> names something: an adapter, or (power plan) a power scheme.</summary>
     public static bool AdapterScoped(TweakId id) => id is TweakId.NicPowerSaving or TweakId.EnergyEfficientEthernet ||
@@ -48,10 +52,12 @@ public static class TweakRules
 
     /// <summary>Adapter advanced properties (read/written through the driver's own advanced-property list).</summary>
     public static bool AdvancedProperty(TweakId id) => id is TweakId.GreenEthernet or TweakId.PowerSavingMode or
-        TweakId.AdvancedEee or TweakId.SelectiveSuspend or TweakId.InterruptModeration || DriverMapped(id);
+        TweakId.AdvancedEee or TweakId.SelectiveSuspend or TweakId.InterruptModeration or TweakId.ReceiveSideScaling or
+        TweakId.PacketCoalescing || DriverMapped(id);
 
     /// <summary>Values that differ per driver: the target is the driver value whose label matches (e.g. "Prefer 5GHz band").</summary>
-    public static bool DriverMapped(TweakId id) => id is TweakId.PreferredBand or TweakId.MimoPowerSave or TweakId.RoamingAggressiveness;
+    public static bool DriverMapped(TweakId id) => id is TweakId.PreferredBand or TweakId.MimoPowerSave or TweakId.RoamingAggressiveness or
+        TweakId.SpeedDuplex;
 
     /// <summary>The value Netcheck proposes for each tweak.</summary>
     public static long? Target(TweakId id) => id switch
@@ -65,7 +71,8 @@ public static class TweakRules
         TweakId.UpdateSharing => 1,
         TweakId.WifiPowerSaving or TweakId.PcieLinkPower => 0,
         TweakId.GreenEthernet or TweakId.PowerSavingMode or TweakId.AdvancedEee or TweakId.SelectiveSuspend or
-            TweakId.InterruptModeration => 0,
+            TweakId.InterruptModeration or TweakId.PacketCoalescing => 0,
+        TweakId.ReceiveSideScaling => 1,
         _ => throw new ArgumentOutOfRangeException(nameof(id), "This tweak's target comes from the driver."),
     };
 
@@ -82,7 +89,9 @@ public static class TweakRules
             TweakId.WifiPowerSaving => v.Value is >= 0 and <= 3,
             TweakId.PcieLinkPower => v.Value is >= 0 and <= 2,
             TweakId.GreenEthernet or TweakId.PowerSavingMode or TweakId.AdvancedEee or TweakId.SelectiveSuspend or
-                TweakId.InterruptModeration => v.Value is 0 or 1,
+                TweakId.InterruptModeration or TweakId.ReceiveSideScaling or TweakId.PacketCoalescing => v.Value is 0 or 1,
+            // Speed values are enumerations (0 = auto, 1..10 standard); some drivers use larger codes such as 2500.
+            TweakId.SpeedDuplex => v.Value is >= 0 and <= 100_000,
             // The platform additionally requires the value to be one the driver itself lists (Permits).
             TweakId.PreferredBand or TweakId.MimoPowerSave or TweakId.RoamingAggressiveness => v.Value is >= 0 and <= 255,
             _ => false,

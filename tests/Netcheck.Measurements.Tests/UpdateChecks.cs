@@ -53,6 +53,17 @@ internal static class UpdateChecks
             Require(AppVersion.ReadFromAssembly(published)?.ToString() == "1.0.0-dev.4", "version read from a published Netcheck.dll");
         Require(AppVersion.ReadFromAssembly(Path.Combine(AppContext.BaseDirectory, "missing.dll")) is null, "missing file gives no version");
         Console.WriteLine($"PASS version from assembly metadata ({own}{(File.Exists(published) ? ", published 1.0.0-dev.4" : "")})");
+
+        // One file (P14): Netcheck.dll read out of a one-file Netcheck.exe (NETCHECK_ONEFILE_EXE names a published one).
+        Require(OneFileBundle.ReadFile(typeof(UpdateChecks).Assembly.Location, "Netcheck.dll") is null, "a plain assembly is no bundle");
+        if (Environment.GetEnvironmentVariable("NETCHECK_ONEFILE_EXE") is { Length: > 0 } exe)
+        {
+            var bundled = OneFileBundle.ReadFile(exe, "Netcheck.dll");
+            var version = bundled is null ? null : AppVersion.ReadFromAssembly(new MemoryStream(bundled));
+            Require(version is not null && bundled!.AsSpan().IndexOf("Netcheck.ProtectedDeployment"u8) >= 0,
+                "version and protected-deployment marker read from inside a one-file Netcheck.exe");
+            Console.WriteLine($"PASS one-file bundle read ({version}, {bundled!.Length:N0} bytes)");
+        }
     }
 
     private static void Require(bool condition, string message)
