@@ -28,6 +28,8 @@ public sealed partial class MainWindow : Window
         SettingsButton.Click += (_, _) => ShowSettings();
         ThemeManager.ExtraRoots = () => pages.Values;
         Netcheck.Controls.SelectionSlider.Attach(TabIndicator, Tabs);
+        InstallButton.IsVisible = Netcheck.Controls.InstallOffer.Offered;
+        InstallButton.Click += OnInstallClick;
         Navigate("check");
         Opened += (_, _) =>
         {
@@ -46,6 +48,44 @@ public sealed partial class MainWindow : Window
                 e.Handled = true;
             }
         };
+    }
+
+    // async void never rethrows: every path ends in an honest label.
+    private async void OnInstallClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            InstallButton.IsEnabled = false;
+            InstallButton.Content = "Installing…";
+            ToolTip.SetTip(InstallButton, null);
+            var result = await Updater.InstallFromPortableAsync();
+            InstallButton.IsEnabled = true;
+            switch (result.Outcome)
+            {
+                case Netcheck.Elevation.InstallOutcome.Done:
+                    InstallButton.Content = "Opening…";
+                    InstallButton.IsEnabled = false;
+                    break;
+                case Netcheck.Elevation.InstallOutcome.AlreadyInstalled:
+                    InstallButton.Content = "Open Installed Copy";
+                    InstallButton.Click -= OnInstallClick;
+                    InstallButton.Click += (_, _) => Updater.Restart();
+                    break;
+                case Netcheck.Elevation.InstallOutcome.Cancelled:
+                    InstallButton.Content = "Try Again";
+                    ToolTip.SetTip(InstallButton, "Nothing changed: Windows' permission wasn't given.");
+                    break;
+                default:
+                    InstallButton.Content = "Try Again";
+                    ToolTip.SetTip(InstallButton, "Nothing changed. " + result.Reason);
+                    break;
+            }
+        }
+        catch
+        {
+            InstallButton.IsEnabled = true;
+            InstallButton.Content = "Try Again";
+        }
     }
 
     private TaskCompletionSource<bool>? confirm;

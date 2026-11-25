@@ -368,8 +368,8 @@ public sealed partial class DnsPage : UserControl
             row.Children.Add(name);
             row.Children.Add(track);
             row.Children.Add(ms);
-            var cell = new Border { Child = row, BorderBrush = Brush("LineBrush"),
-                BorderThickness = new Thickness(0, Lanes.Children.Count == 0 ? 0 : 1, 0, 0) };
+            var cell = new Netcheck.Controls.Divided { Child = row,
+                Lines = new Thickness(0, Lanes.Children.Count == 0 ? 0 : 1, 0, 0) };
             if (!Motion.Reduced)
                 cell.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(300) }];
             Lanes.Children.Add(cell);
@@ -564,10 +564,10 @@ public sealed partial class DnsPage : UserControl
             row.Children.Add(rank);
             row.Children.Add(name);
             row.Children.Add(value);
-            var cell = new Border
+            var cell = new Netcheck.Controls.Divided
             {
-                Padding = new Thickness(24, 16), BorderBrush = Brush("LineBrush"),
-                BorderThickness = new Thickness(i == 0 ? 0 : 1, 0, 0, 0), Child = row,
+                Padding = new Thickness(24, 16),
+                Lines = new Thickness(i == 0 ? 0 : 1, 0, 0, 0), Child = row,
             };
             Grid.SetColumn(cell, i);
             Podium.Children.Add(cell);
@@ -616,13 +616,20 @@ public sealed partial class DnsPage : UserControl
             // Every row the same height (design rules); explanations sit behind an (i), never on a second line.
             Compare.RowDefinitions.Add(new RowDefinition(new GridLength(i == 0 ? 38 : 42)));
             var header = i == 0;
+            if (!header)
+            {
+                // One divider across the whole row (not one per column), so it fades only near the card's edges.
+                var line = new Netcheck.Controls.Divided { Lines = new Thickness(0, 1, 0, 0), IsHitTestVisible = false };
+                Grid.SetRow(line, i);
+                Grid.SetColumnSpan(line, 3);
+                Compare.Children.Add(line);
+            }
             for (var c = 0; c < 3; c++)
             {
                 var text = c == 0 ? rows[i].Label : c == 1 ? rows[i].Now : rows[i].Best;
                 var cell = new Border
                 {
-                    Padding = new Thickness(24, 0), BorderBrush = Brush("LineBrush"),
-                    BorderThickness = new Thickness(0, i == 0 ? 0 : 1, 0, 0),
+                    Padding = new Thickness(24, 0),
                     Child = new TextBlock
                     {
                         Text = text, FontSize = header ? 17 : 18,
@@ -731,8 +738,8 @@ public sealed partial class DnsPage : UserControl
             row.Children.Add(name);
             row.Children.Add(typical);
             row.Children.Add(details);
-            AllRows.Children.Add(new Border { Child = row, BorderBrush = Brush("LineBrush"),
-                BorderThickness = new Thickness(0, i == 0 ? 0 : 1, 0, 0) });
+            AllRows.Children.Add(new Netcheck.Controls.Divided { Child = row,
+                Lines = new Thickness(0, i == 0 ? 0 : 1, 0, 0) });
         }
     }
 

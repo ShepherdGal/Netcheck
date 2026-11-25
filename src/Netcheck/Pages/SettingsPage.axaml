@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nc="using:Netcheck.Controls"
              x:Class="Netcheck.Pages.SettingsPage">
   <!-- Pattern: Settings / Configuration (approved mockup design/settings-mockup.html, P7). Centred title (+ a green
        "Update available" link only after a verified newer release), then one glass card of six rows: label + short
@@ -75,7 +76,7 @@
           </Grid>
 
           <!-- Theme: Dark (Dusk) or Light (Dawn), the same design turned over (user, 2026-11-25) -->
-          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+          <nc:Divided Lines="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Theme" />
@@ -91,10 +92,10 @@
                 </Panel>
               </Border>
             </Grid>
-          </Border>
+          </nc:Divided>
 
           <!-- Speed units -->
-          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+          <nc:Divided Lines="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Speed units" />
@@ -110,10 +111,10 @@
                 </Panel>
               </Border>
             </Grid>
-          </Border>
+          </nc:Divided>
 
           <!-- How the last check was measured -->
-          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+          <nc:Divided Lines="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="How the last check was measured" />
@@ -122,10 +123,10 @@
               <Button Grid.Column="1" x:Name="MethodButton" Theme="{StaticResource NcQuietButton}" Content="Show"
                       MinWidth="96" VerticalAlignment="Center" />
             </Grid>
-          </Border>
+          </nc:Divided>
 
           <!-- Your data -->
-          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+          <nc:Divided Lines="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Your data" />
@@ -136,10 +137,10 @@
                 <Button x:Name="FolderButton" Theme="{StaticResource NcQuietButton}" Content="Open Folder" VerticalAlignment="Center" />
               </StackPanel>
             </Grid>
-          </Border>
+          </nc:Divided>
 
           <!-- Check for updates -->
-          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+          <nc:Divided Lines="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Check for updates" />
@@ -153,10 +154,10 @@
                               AutomationProperties.Name="Check for updates automatically" />
               </StackPanel>
             </Grid>
-          </Border>
+          </nc:Divided>
 
           <!-- Open-source licences (P14): the texts ship inside Netcheck.exe; Show opens them as one text file. -->
-          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+          <nc:Divided Lines="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Open-source licences" />
@@ -165,10 +166,10 @@
               <Button Grid.Column="1" x:Name="LicencesButton" Theme="{StaticResource NcQuietButton}" Content="Show"
                       MinWidth="96" VerticalAlignment="Center" />
             </Grid>
-          </Border>
+          </nc:Divided>
 
           <!-- Version: installed / update ready / updating / portable / development -->
-          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+          <nc:Divided Lines="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock x:Name="VersionTitle" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center">
@@ -187,11 +188,12 @@
                         VerticalAlignment="Center" />
               </StackPanel>
             </Grid>
-          </Border>
+          </nc:Divided>
 
           <!-- Support (user, 2026-11-17): the last row, with a soft golden glow so it looks different from settings. -->
-          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Background="{DynamicResource SupportGlowBrush}"
+          <Border Background="{DynamicResource SupportGlowBrush}"
                   CornerRadius="0,0,15,15">
+            <nc:Divided Lines="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Support Netcheck" Foreground="{DynamicResource SupportBrush}" />
@@ -201,6 +203,7 @@
                       Content="Donate on Ko-fi ↗" Foreground="{DynamicResource SupportBrush}" VerticalAlignment="Center"
                       ToolTip.Tip="Opens ko-fi.com/trueshepherdmusic in your browser" />
             </Grid>
+            </nc:Divided>
           </Border>
         </StackPanel>
       </Border>

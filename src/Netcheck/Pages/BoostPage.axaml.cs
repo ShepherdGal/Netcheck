@@ -394,7 +394,7 @@ public sealed partial class BoostPage : UserControl
 
     // ---------- row helpers ----------
 
-    private static Border Row(Control mark, string name, string? reason, Control? right, bool quiet = false)
+    private static Netcheck.Controls.Divided Row(Control mark, string name, string? reason, Control? right, bool quiet = false)
     {
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("22,*,Auto"), ColumnSpacing = 12 };
         var text = Texts(name, reason, quiet);
@@ -425,12 +425,12 @@ public sealed partial class BoostPage : UserControl
     }
 
     /// <summary>Joined-card row: hairline above every row except the first (see <see cref="Trim"/>).</summary>
-    private static Border Cell(Control child)
+    private static Netcheck.Controls.Divided Cell(Control child)
     {
-        return new Border
+        return new Netcheck.Controls.Divided
         {
-            Child = child, Padding = new Thickness(24, 12), BorderBrush = Brush("LineBrush"),
-            BorderThickness = new Thickness(0, 1, 0, 0),
+            Child = child, Padding = new Thickness(24, 12),
+            Lines = new Thickness(0, 1, 0, 0),
         };
     }
 

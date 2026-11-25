@@ -345,7 +345,7 @@ public sealed partial class CheckPage : UserControl
         var waiting = new Assessed(null, Tone.Neutral, pending);
         stripValues.Clear();
         stripMeanings.Clear();
-        Border[] boxes =
+        Netcheck.Controls.Divided[] boxes =
         [
             DnsBox(s is not null),
             Box("Ping", s?.Ping ?? waiting, v => (Ms(v), "ms"), "ms"),
@@ -356,12 +356,12 @@ public sealed partial class CheckPage : UserControl
         for (var i = 0; i < boxes.Length; i++)
         {
             Grid.SetColumn(boxes[i], i);
-            boxes[i].BorderThickness = new Thickness(i == 0 ? 0 : 1, 0, 0, 0);
+            boxes[i].Lines = new Thickness(i == 0 ? 0 : 1, 0, 0, 0);
             StripGrid.Children.Add(boxes[i]);
         }
     }
 
-    private Border Box(string name, Assessed a, Func<double, (string Value, string Unit)> format, string unitWhenEmpty)
+    private Netcheck.Controls.Divided Box(string name, Assessed a, Func<double, (string Value, string Unit)> format, string unitWhenEmpty)
     {
         var (value, unit) = a.Value is { } v ? format(v) : ("—", unitWhenEmpty);
         var live = a.Value is null ? Live(name) : null;
@@ -385,7 +385,7 @@ public sealed partial class CheckPage : UserControl
     }
 
     /// <summary>DNS box: same three rows as the others; "Find a Faster DNS" is a link on the label row.</summary>
-    private Border DnsBox(bool checkedNow)
+    private Netcheck.Controls.Divided DnsBox(bool checkedNow)
     {
         var find = new Button { Theme = (Avalonia.Styling.ControlTheme)Resource("NcLinkButton"), Content = "Find a Faster DNS",
             Padding = new Thickness(0), FontSize = 17, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center };
@@ -407,12 +407,12 @@ public sealed partial class CheckPage : UserControl
         return Cell(LabelRow(header), name, meaning);
     }
 
-    private Border Cell(params Control[] rows)
+    private Netcheck.Controls.Divided Cell(params Control[] rows)
     {
         var stack = new StackPanel { Spacing = 1 };
         foreach (var row in rows)
             stack.Children.Add(row);
-        return new Border { Padding = new Thickness(24, 16), BorderBrush = Brush("LineBrush"), Child = stack };
+        return new Netcheck.Controls.Divided { Padding = new Thickness(24, 16), Child = stack };
     }
 
     private static TextBlock Label(string text) =>
@@ -494,11 +494,10 @@ public sealed partial class CheckPage : UserControl
         void Tile(string name, string text)
         {
             var index = Facts.Children.Count;
-            var cell = new Border
+            var cell = new Netcheck.Controls.Divided
             {
                 Padding = new Thickness(24, 12),
-                BorderBrush = Brush("LineBrush"),
-                BorderThickness = new Thickness(index % 2 == 0 ? 0 : 1, index < 2 ? 0 : 1, 0, 0),
+                Lines = new Thickness(index % 2 == 0 ? 0 : 1, index < 2 ? 0 : 1, 0, 0),
                 Child = new StackPanel
                 {
                     Spacing = 3,

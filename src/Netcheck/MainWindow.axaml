@@ -34,6 +34,11 @@
         <TextBlock x:Name="BrandText" Text="Netcheck" FontWeight="SemiBold" FontSize="17" VerticalAlignment="Center" />
       </StackPanel>
 
+      <!-- Portable copy only: the install is offered at the top of every page so nobody has to hunt for it. -->
+      <Button Grid.Column="1" x:Name="InstallButton" Theme="{StaticResource NcPrimaryButton}" Content="Install Netcheck"
+              Padding="18,6" FontSize="14" VerticalAlignment="Center" IsVisible="False"
+              AutomationProperties.Name="Install Netcheck" />
+
       <Button Grid.Column="2" x:Name="SettingsButton" Theme="{StaticResource NcIconButton}"
               HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,92,0"
               AutomationProperties.Name="Settings" ToolTip.Tip="Settings">

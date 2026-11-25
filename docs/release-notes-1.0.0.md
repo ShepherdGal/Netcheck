@@ -21,5 +21,5 @@ Netcheck 1.0 isn't code-signed: if Windows says **Windows protected your PC**, c
 ## Good to know
 
 - A speed check on a fast connection uses up to about 1 GB of data.
-- Switching DNS and Boost need the installed app (Netcheck offers **Install Netcheck** where you need it). Netcheck doesn't switch DNS on work or school PCs, with a VPN on, or where DNS is set by a policy.
+- Switching DNS and Boost need the installed app (the **Install Netcheck** button sits at the top of every screen on the portable copy). Netcheck doesn't switch DNS on work or school PCs, with a VPN on, or where DNS is set by a policy.
 - No account, no tracking, no analytics.

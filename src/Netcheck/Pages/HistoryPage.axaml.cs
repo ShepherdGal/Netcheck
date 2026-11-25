@@ -155,9 +155,9 @@ public sealed partial class HistoryPage : UserControl
                 e.Handled = true;
             }
         };
-        return new Border
+        return new Netcheck.Controls.Divided
         {
-            BorderBrush = Brush("LineBrush"), BorderThickness = new Thickness(0, 1, 0, 0), Child = row,
+            Lines = new Thickness(0, 1, 0, 0), Child = row,
         };
     }
 
@@ -238,7 +238,7 @@ public sealed partial class HistoryPage : UserControl
                 cells[i].VerticalAlignment = VerticalAlignment.Center;
                 grid.Children.Add(cells[i]);
             }
-            CompareRows.Children.Add(new Border { BorderBrush = Brush("LineBrush"), BorderThickness = new Thickness(0, 1, 0, 0), Child = grid });
+            CompareRows.Children.Add(new Netcheck.Controls.Divided { Lines = new Thickness(0, 1, 0, 0), Child = grid });
         }
         BetweenText.Text = Between(before, after);
     }
