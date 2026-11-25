@@ -9,7 +9,7 @@ public sealed record ReleaseOffer(AppVersion Version, string Tag, string Notes, 
 
 /// <summary>
 /// Reads GitHub Releases for ShepherdGal/Netcheck. Only a release that is newer than the running version, is not a
-/// draft, has the package <c>Netcheck-{version}-win-x64.zip</c> and a GitHub "sha256:" digest for it is offered.
+/// draft, has the one-file <c>Netcheck.exe</c> and a GitHub "sha256:" digest for it is offered.
 /// Pre-releases are offered only to someone already running a pre-release.
 /// </summary>
 public static class ReleaseFeed
@@ -25,7 +25,7 @@ public static class ReleaseFeed
     public const long MaxPackageBytes = 200L * 1024 * 1024;
     private const int MaxFeedBytes = 2 * 1024 * 1024;
 
-    public static string PackageName(AppVersion version) => $"Netcheck-{version}-win-x64.zip";
+    public static string PackageName(AppVersion version) => "Netcheck.exe";   // one file per release (user, 2026-11-25)
 
     public static HttpClient CreateClient()
     {

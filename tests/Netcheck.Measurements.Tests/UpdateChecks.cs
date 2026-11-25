@@ -18,17 +18,17 @@ internal static class UpdateChecks
         var json = Encoding.UTF8.GetBytes($$"""
         [
           {"tag_name":"v1.0.0-dev.3","draft":false,"prerelease":true,"html_url":"https://github.com/ShepherdGal/Netcheck/releases/tag/v1.0.0-dev.3","body":"Fixes",
-           "assets":[{"name":"Netcheck-1.0.0-dev.3-win-x64.zip","size":52000000,"browser_download_url":"https://github.com/ShepherdGal/Netcheck/releases/download/v1.0.0-dev.3/Netcheck-1.0.0-dev.3-win-x64.zip","digest":"sha256:{{sha}}"}]},
+           "assets":[{"name":"Netcheck.exe","size":52000000,"browser_download_url":"https://github.com/ShepherdGal/Netcheck/releases/download/v1.0.0-dev.3/Netcheck.exe","digest":"sha256:{{sha}}"}]},
           {"tag_name":"v1.0.0-dev.4","draft":true,"prerelease":true,"html_url":"https://github.com/ShepherdGal/Netcheck/releases/tag/v1.0.0-dev.4",
-           "assets":[{"name":"Netcheck-1.0.0-dev.4-win-x64.zip","size":1,"browser_download_url":"https://github.com/x.zip","digest":"sha256:{{sha}}"}]},
+           "assets":[{"name":"Netcheck.exe","size":1,"browser_download_url":"https://github.com/x.zip","digest":"sha256:{{sha}}"}]},
           {"tag_name":"v1.0.0-dev.5","draft":false,"prerelease":true,"html_url":"https://github.com/ShepherdGal/Netcheck/releases/tag/v1.0.0-dev.5",
-           "assets":[{"name":"Netcheck-1.0.0-dev.5-win-x64.zip","size":10,"browser_download_url":"https://github.com/a.zip"}]},
+           "assets":[{"name":"Netcheck.exe","size":10,"browser_download_url":"https://github.com/a.zip"}]},
           {"tag_name":"v1.0.0-dev.6","draft":false,"prerelease":true,"html_url":"https://github.com/ShepherdGal/Netcheck/releases/tag/v1.0.0-dev.6",
-           "assets":[{"name":"Netcheck-1.0.0-dev.6-win-x64.zip","size":10,"browser_download_url":"https://evil.example/a.zip","digest":"sha256:{{sha}}"}]},
+           "assets":[{"name":"Netcheck.exe","size":10,"browser_download_url":"https://evil.example/a.zip","digest":"sha256:{{sha}}"}]},
           {"tag_name":"v1.0.0-dev.7","draft":false,"prerelease":true,"html_url":"https://github.com/ShepherdGal/Netcheck/releases/tag/v1.0.0-dev.7",
            "assets":[{"name":"Other.zip","size":10,"browser_download_url":"https://github.com/a.zip","digest":"sha256:{{sha}}"}]},
           {"tag_name":"v1.0.0","draft":false,"prerelease":false,"html_url":"https://github.com/ShepherdGal/Netcheck/releases/tag/v1.0.0",
-           "assets":[{"name":"Netcheck-1.0.0-win-x64.zip","size":52000000,"browser_download_url":"https://github.com/ShepherdGal/Netcheck/releases/download/v1.0.0/Netcheck-1.0.0-win-x64.zip","digest":"sha256:{{sha}}"}]}
+           "assets":[{"name":"Netcheck.exe","size":52000000,"browser_download_url":"https://github.com/ShepherdGal/Netcheck/releases/download/v1.0.0/Netcheck.exe","digest":"sha256:{{sha}}"}]}
         ]
         """);
         var offers = ReleaseFeed.Parse(json);

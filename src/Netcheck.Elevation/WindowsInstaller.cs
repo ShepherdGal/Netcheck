@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
@@ -43,7 +42,6 @@ public static class WindowsInstaller
     private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\Netcheck";
     // One file (P14): Netcheck.exe holds everything. A 1.0 folder (Netcheck.dll beside it) still counts, for "Go back".
     private static readonly string[] Required = ["Netcheck.exe"];
-    private const string PortableMarker = "Netcheck.portable";
 
     private static string ProgramFiles => Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
     public static string InstallDirectory => Path.Combine(ProgramFiles, "Netcheck");
@@ -360,18 +358,13 @@ public static class WindowsInstaller
             return Abandon(new(InstallOutcome.NothingChanged, "the download didn't match the release fingerprint"));
 
         var files = Directory.CreateDirectory(Path.Combine(staging.FullName, "files"));
-        Trace("broker: package checked, extracting");
-        Extract(copy, files);
-        // The package also carries a 1.0-style folder for 1.0.0 updaters; a one-file install keeps only the exe.
-        foreach (var entry in files.EnumerateFileSystemInfos())
-        {
-            if (entry.Name.Equals("Netcheck.exe", StringComparison.OrdinalIgnoreCase))
-                continue;
-            if (entry is DirectoryInfo directory)
-                directory.Delete(recursive: true);
-            else
-                entry.Delete();
-        }
+        // The release asset is the one-file Netcheck.exe itself (one file per release, user 2026-11-25): the checked
+        // protected copy becomes the incoming program as it is.
+        Trace("broker: package checked");
+        var incoming = new FileInfo(Path.Combine(files.FullName, "Netcheck.exe"));
+        File.Move(copy, incoming.FullName);
+        SetOwner(incoming);
+        SetOwner(files);
         if (!Complete(files.FullName) || VersionOf(files.FullName) is not { } got || !got.Equals(target))
             return Abandon(new(InstallOutcome.NothingChanged, "the package isn't a complete Netcheck"));
         Trace($"broker: complete, swapping (version {VersionOf(files.FullName)})");
@@ -385,33 +378,6 @@ public static class WindowsInstaller
             TryDelete(UpdateStaging);
             return reply;
         }
-    }
-
-    private static void Extract(string zip, DirectoryInfo into)
-    {
-        var root = into.FullName + Path.DirectorySeparatorChar;
-        using var archive = ZipFile.OpenRead(zip);
-        long total = 0;
-        foreach (var entry in archive.Entries)
-        {
-            var path = Path.GetFullPath(Path.Combine(into.FullName, entry.FullName));
-            if (!path.StartsWith(root, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("package entry outside its folder");
-            if (entry.FullName.EndsWith('/') || entry.FullName.EndsWith('\\'))
-            {
-                Directory.CreateDirectory(path);
-                continue;
-            }
-            if (entry.FullName.Equals(PortableMarker, StringComparison.OrdinalIgnoreCase))
-                continue;
-            total += entry.Length;
-            if (total > 4 * ReleaseFeed.MaxPackageBytes)
-                throw new InvalidDataException("package expands too much");
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            entry.ExtractToFile(path, overwrite: false);
-        }
-        foreach (var entry in into.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
-            SetOwner(entry);
     }
 
     /// <summary>The swap with its journal. <paramref name="incoming"/> holds the version to run next.</summary>

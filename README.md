@@ -22,7 +22,7 @@ The only connections Netcheck makes are the ones a check needs (listed under [Wh
 
 ## 📥 Download Netcheck
 
-**Latest version: https://github.com/ShepherdGal/Netcheck/releases/latest.** Download **`Netcheck.exe`** and double-click it. It's one file with nothing to unzip and nothing else to install: everything Netcheck needs is inside it. (The `.zip` in each release is the package the installed app uses to update itself.)
+**Latest version: https://github.com/ShepherdGal/Netcheck/releases/latest.** Download **`Netcheck.exe`** and double-click it. It's one file with nothing to unzip and nothing else to install: everything Netcheck needs is inside it. The installed app updates itself from the same file.
 
 - **Use it straight away (portable):** your checks and settings stay in a `Netcheck Data` folder next to `Netcheck.exe`.
 - **Install it:** switching DNS and Boost need the installed app, because they change Windows settings and Windows only lets a locked, installed copy do that. Where you need it, Netcheck shows **Install Netcheck**. Windows asks once for permission, Netcheck is copied to `C:\Program Files\Netcheck` with a Start menu entry, and your portable checks come along (copied; the portable folder isn't changed).

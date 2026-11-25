@@ -49,11 +49,11 @@ Console programs, not a test adapter. Each prints `PASS …` lines and exits non
 ## Package
 
 ```powershell
-& .\tools\Publish-Netcheck.ps1            # new version folder + zip in artifacts\
-& .\tools\Publish-Netcheck.ps1 -Replace   # rebuild the same version; keeps its Data\ folder
+& .\tools\Publish-Netcheck.ps1            # artifacts\Netcheck-<version>\Netcheck.exe, the one release file
+& .\tools\Publish-Netcheck.ps1 -Replace   # rebuild the same version; keeps its data folder
 ```
 
-The package is self-contained (.NET included). Installing, updating and going back are built into Netcheck.exe: a portable copy offers **Install Netcheck** where an action needs the installed app; Settings offers **Update Now** and **Go Back**. Releases are published on GitHub Releases with the zip's SHA-256.
+Netcheck.exe is one self-contained, compressed file (.NET included). Installing, updating and going back are built into it: a portable copy offers **Install Netcheck** where an action needs the installed app; Settings offers **Update Now** and **Go Back**. Each GitHub release has one asset, Netcheck.exe, and updates are checked against its SHA-256.
 
 ## Packages
 

@@ -14,8 +14,6 @@ The first public release of Netcheck: a calm Windows app that tells you, in plai
 
 **`Netcheck.exe`**: download it and double-click it. One file, nothing to unzip, nothing else to install. Windows 10 or 11, 64-bit. Run portable, your checks stay in a `Netcheck Data` folder next to it.
 
-`Netcheck-1.0.0-win-x64.zip` is the package the installed app uses to update itself; you don't need it.
-
 SHA-256: listed with each download on this release page.
 
 Netcheck 1.0 isn't code-signed: if Windows says **Windows protected your PC**, click **More info → Run anyway**. Compare the SHA-256 above with your download if you want to be sure it's this file.
