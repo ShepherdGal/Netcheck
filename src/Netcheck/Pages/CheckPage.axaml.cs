@@ -37,6 +37,9 @@ public sealed partial class CheckPage : UserControl
     // While a check runs: the stage being measured, so unfinished readings can breathe (design rules "alive but calm").
     private CheckStage? liveStage;
     private readonly List<Control> stripValues = [];
+    private readonly List<Control> stripMeanings = [];   // parallel to stripValues: the words under each number
+    private Control? dnsMeaning;
+    private DateTime revealEnds;   // when the result fade-in finishes; the DNS timing waits for it so nothing pops mid-fade
 
     public CheckPage()
     {
@@ -155,10 +158,14 @@ public sealed partial class CheckPage : UserControl
         {
             result = await new InternetCheckEngine().RunAsync(Options(), progress, run.Token);
         }
-        catch (Exception error) when (error is HttpRequestException or IOException or InvalidOperationException)
+        catch (Exception error)
         {
-            result = new InternetCheckResult(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, false,
-                new LatencyReading(StageOutcome.Failed, [], 0), null, null, null, null, [error.Message]);
+            // Any failure (not only network errors) ends as an honest "didn't finish" result, or as stopped when the
+            // user pressed Stop: never a page stuck on "Measuring" and never a closed app (async click handler).
+            var stopped = run.IsCancellationRequested;
+            result = new InternetCheckResult(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, stopped,
+                new LatencyReading(stopped ? StageOutcome.Stopped : StageOutcome.Failed, [], 0), null, null, null, null,
+                stopped ? [] : [error.Message]);
         }
         finally
         {
@@ -212,7 +219,7 @@ public sealed partial class CheckPage : UserControl
         liveStage = null;
         BuildStrip(s);
         if (from is null)
-            RevealStrip();
+            RevealResult();
         BuildFacts(result, s);
         AgainButton.Focus();
         if (from is null)
@@ -223,18 +230,35 @@ public sealed partial class CheckPage : UserControl
     private async Task TimeDnsAsync(InternetCheckResult result, CheckSummary s)
     {
         // Timed the way Windows reaches it: over HTTPS when private lookups are on (P12b).
-        var address = connection.DnsAddress;
-        var template = await Task.Run(() => DnsSwitcher.HttpsTemplateFor(address));
-        var ms = await new Netcheck.Measurements.Resolvers.DnsBenchmarkEngine().QuickLookupAsync(address, CancellationToken.None,
-            httpsTemplate: template);
+        var saved = connection;
+        double? ms = null;
+        try
+        {
+            var address = saved.DnsAddress;
+            var template = await Task.Run(() => DnsSwitcher.HttpsTemplateFor(address));
+            ms = await new Netcheck.Measurements.Resolvers.DnsBenchmarkEngine().QuickLookupAsync(address, CancellationToken.None,
+                httpsTemplate: template);
+        }
+        catch (Exception)
+        {
+            // No timing: the DNS box says it couldn't be measured; the check itself is still saved below.
+        }
+        finally
+        {
+            // Saved once the DNS timing is in, so History can compare it too. Always saved, even when a new check
+            // started meanwhile (it used to be dropped when Check Again was pressed within a second or two).
+            _ = CheckHistory.SaveAsync(new Netcheck.Storage.CheckRecord(Guid.NewGuid(), result, saved.Kind,
+                saved.DnsName, saved.DnsAddress, CheckAssessment.DnsLookup(ms).Value));
+        }
+        if (revealEnds > DateTime.UtcNow)
+            await Task.Delay(revealEnds - DateTime.UtcNow);
         if (last != result || shown != s)
             return;   // a newer check started meanwhile
         dnsLookup = CheckAssessment.DnsLookup(ms);
         BuildStrip(s);
+        if (dnsMeaning is not null)
+            FadeIn(dnsMeaning, 0, 480);   // the timing words replace the waiting dots softly
         BuildFacts(result, s);
-        // Saved once the DNS timing is in, so History can compare it too.
-        _ = CheckHistory.SaveAsync(new Netcheck.Storage.CheckRecord(Guid.NewGuid(), result, connection.Kind,
-            connection.DnsName, connection.DnsAddress, dnsLookup.Value));
     }
 
     /// <summary>True once a check has finished, so Settings can offer "How the last check was measured".</summary>
@@ -320,6 +344,7 @@ public sealed partial class CheckPage : UserControl
         string Percent(double v) => v == 0 ? "0" : v.ToString(v < 1 ? "0.##" : "0.#", CultureInfo.CurrentCulture);
         var waiting = new Assessed(null, Tone.Neutral, pending);
         stripValues.Clear();
+        stripMeanings.Clear();
         Border[] boxes =
         [
             DnsBox(s is not null),
@@ -355,6 +380,7 @@ public sealed partial class CheckPage : UserControl
         // The reading and its meaning are centred in the cell; the label sits top-left like "DNS" (user, 2026-11-17).
         var meaning = live is { } l ? LiveDot(l.Text, l.Active) : Dot(a.Tone, a.Meaning);
         reading.HorizontalAlignment = meaning.HorizontalAlignment = HorizontalAlignment.Center;
+        stripMeanings.Add(meaning);
         return Cell(LabelRow(Label(name)), reading, meaning);
     }
 
@@ -377,6 +403,7 @@ public sealed partial class CheckPage : UserControl
             : opened is null && checkedNow ? LiveDot("Timing lookups…", true)
             : Dot(Tone.Neutral, opened is not null ? "Not recorded" : "Speed not timed yet");
         meaning.HorizontalAlignment = HorizontalAlignment.Center;
+        dnsMeaning = meaning;
         return Cell(LabelRow(header), name, meaning);
     }
 
@@ -412,23 +439,44 @@ public sealed partial class CheckPage : UserControl
     private static Control LiveDot(string text, bool active) =>
         new Panel { Height = 21, Children = { new Netcheck.Controls.SpringWave(text) } };
 
-    /// <summary>The finished numbers ease in one after another (about half a second each, 120 ms apart).</summary>
-    private void RevealStrip()
+    /// <summary>
+    /// Opacity-only fade-in (user, 2026-11-25): the control keeps its size and place the whole time, so nothing around it
+    /// moves. It starts invisible and eases to full after <paramref name="delayMs"/>. Skipped with reduced motion.
+    /// </summary>
+    private static void FadeIn(Control control, int delayMs = 40, int durationMs = 520)
     {
         if (Motion.Reduced)
             return;
-        var delay = 0;
-        foreach (var value in stripValues.ToArray())
+        control.Transitions = null;
+        control.Opacity = 0;
+        DispatcherTimer.RunOnce(() =>
         {
-            value.Opacity = 0;
-            var wait = delay;
-            DispatcherTimer.RunOnce(() =>
-            {
-                value.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(520), Easing = Motion.EaseOut }];
-                value.Opacity = 1;
-            }, TimeSpan.FromMilliseconds(40 + wait));
+            control.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(durationMs), Easing = Motion.EaseOut }];
+            control.Opacity = 1;
+        }, TimeSpan.FromMilliseconds(delayMs));
+    }
+
+    /// <summary>
+    /// A finished check arrives as one calm sequence: header (title and verdict), the two gauge meanings, then the strip's
+    /// numbers and their words one after another (120 ms apart), each easing in over about half a second.
+    /// </summary>
+    private void RevealResult()
+    {
+        if (Motion.Reduced)
+            return;
+        FadeIn(Title, 40, 480);
+        FadeIn(VerdictLine, 120, 520);
+        FadeIn(DownMeaning, 260, 520);
+        FadeIn(UpMeaning, 380, 520);
+        var delay = 500;
+        for (var i = 0; i < stripValues.Count; i++)
+        {
+            FadeIn(stripValues[i], delay, 520);
+            if (i < stripMeanings.Count)
+                FadeIn(stripMeanings[i], delay + 80, 520);
             delay += 120;
         }
+        revealEnds = DateTime.UtcNow + TimeSpan.FromMilliseconds(delay + 700);
     }
 
     /// <summary>A reading's meaning in its status colour; no dot (user, 2026-11-17: the coloured words carry it).</summary>
@@ -529,13 +577,13 @@ public sealed partial class CheckPage : UserControl
     }
 
     private static object Resource(string key) =>
-        Application.Current!.TryFindResource(key, out var value) ? value! : throw new InvalidOperationException(key);
+        ThemeManager.Resource(key) ?? throw new InvalidOperationException(key);
 
     private static IBrush Brush(string key) => Resource(key) as IBrush ?? Brushes.Gray;
 
     private static IBrush ToneBrush(Tone tone)
     {
-        var key = tone switch { Tone.Good => "GoodColor", Tone.Fair => "FairColor", Tone.Poor => "PoorColor", _ => "NeutralColor" };
-        return new SolidColorBrush(Resource(key) is Color c ? c : Colors.Gray);
+        // The shared resource brush itself, so a theme switch can swap it for the other theme\'s copy.
+        return Brush(tone switch { Tone.Good => "GoodBrush", Tone.Fair => "FairBrush", Tone.Poor => "PoorBrush", _ => "NeutralBrush" });
     }
 }

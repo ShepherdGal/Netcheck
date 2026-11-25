@@ -38,8 +38,14 @@ internal static class TrafficMonitor
             return [.. Samples];
     }
 
+    private static int ticking;
+
     private static void Tick()
     {
+        // A slow tick (finding the adapter can take a while) must not overlap the next one: two at once raced on the
+        // byte counters and could draw a false spike.
+        if (Interlocked.Exchange(ref ticking, 1) == 1)
+            return;
         try
         {
             var now = Clock.Elapsed.TotalSeconds;
@@ -79,9 +85,14 @@ internal static class TrafficMonitor
                     Samples.RemoveAt(0);
             }
         }
-        catch (Exception error) when (error is NetworkInformationException or InvalidOperationException or PlatformNotSupportedException)
+        catch (Exception)
         {
+            // Any error here, not just the expected ones: an exception escaping a timer thread closes the whole app.
             adapter = null;
+        }
+        finally
+        {
+            Volatile.Write(ref ticking, 0);
         }
     }
 }
@@ -101,9 +112,10 @@ internal sealed class ActivityChart : Control
     // it looks as smooth as 60 at half the cost (measured: ~27 % → ~14 % of one core at 175 % scaling).
     private const double Span = 60, Delay = 1.25, FrameSeconds = 1.0 / 30 - 0.002;
 
-    private static readonly ImmutablePen GridPen = new(new ImmutableSolidColorBrush(Color.FromArgb(13, 255, 255, 255)), 1);
-
-    private readonly Series down, up;
+    // Colours come from the theme tokens (Dusk / Dawn) and are rebuilt when the theme changes.
+    private ImmutablePen gridPen = new(new ImmutableSolidColorBrush(Color.FromArgb(13, 255, 255, 255)), 1);
+    private ImmutableSolidColorBrush downText = new(Color.Parse("#D6E7FC")), upText = new(Color.Parse("#8DB8F2"));
+    private Series down = null!, up = null!;
     private bool attached;
     private (double Down, double Up, double Top)? legend;
     private readonly List<Bubble> bubbles = [];
@@ -121,8 +133,12 @@ internal sealed class ActivityChart : Control
 
     public ActivityChart()
     {
-        down = new Series(Color.Parse("#D6E7FC"), 0.11, 1.7);
-        up = new Series(Color.Parse("#5E8CCB"), 0.10, 1.4);
+        LoadColors();
+        ActualThemeVariantChanged += (_, _) =>
+        {
+            LoadColors();
+            InvalidateVisual();
+        };
         // Old readings fade out on the left instead of being cut off.
         OpacityMask = new LinearGradientBrush
         {
@@ -133,12 +149,27 @@ internal sealed class ActivityChart : Control
         ClipToBounds = true;
     }
 
+    private Color Token(string key, string fallback) =>
+        this.TryFindResource(key, ActualThemeVariant, out var value) && value is Color color ? color : Color.Parse(fallback);
+
+    private void LoadColors()
+    {
+        down = new Series(Token("ChartDownColor", "#D6E7FC"), 0.11, 1.7);
+        up = new Series(Token("ChartUpColor", "#5E8CCB"), 0.10, 1.4);
+        var grid = Token("ChartGridColor", "#0DFFFFFF");
+        gridPen = new ImmutablePen(new ImmutableSolidColorBrush(grid), 1);
+        downText = new ImmutableSolidColorBrush(Token("ChartDownTextColor", "#D6E7FC"));
+        upText = new ImmutableSolidColorBrush(Token("ChartUpTextColor", "#8DB8F2"));
+    }
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        LoadColors();
         TrafficMonitor.Start();
         attached = true;
-        RequestFrame();
+        loop++;
+        RequestFrame(loop);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -147,11 +178,23 @@ internal sealed class ActivityChart : Control
         base.OnDetachedFromVisualTree(e);
     }
 
-    private void RequestFrame() => TopLevel.GetTopLevel(this)?.RequestAnimationFrame(_ => OnFrame());
+    // Each attach starts one frame loop; a callback from an older loop ends itself, so a quick detach and re-attach can
+    // never leave two loops running.
+    private int loop;
 
-    private void OnFrame()
+    private void RequestFrame(int id) => TopLevel.GetTopLevel(this)?.RequestAnimationFrame(_ => OnFrame(id));
+
+    /// <summary>
+    /// Hidden, minimised or reduced motion: no frame every screen refresh, just a look four times a second (it used to
+    /// ask for every frame even while minimised, which kept the app busy for nothing).
+    /// </summary>
+    private void CheckLater(int id) =>
+        Avalonia.Threading.DispatcherTimer.RunOnce(() => RequestFrame(id), TimeSpan.FromMilliseconds(250),
+            Avalonia.Threading.DispatcherPriority.Background);
+
+    private void OnFrame(int id)
     {
-        if (!attached)
+        if (!attached || id != loop)
             return;
         if (legend is { } readings)
         {
@@ -159,24 +202,25 @@ internal sealed class ActivityChart : Control
             Changed?.Invoke(readings.Down, readings.Up, readings.Top);
         }
         var minimised = TopLevel.GetTopLevel(this) is Window { WindowState: WindowState.Minimized };
-        if (IsEffectivelyVisible && !minimised)
+        if (!IsEffectivelyVisible || minimised)
         {
-            var now = TrafficMonitor.Clock.Elapsed.TotalSeconds;
-            if (Motion.Reduced)
+            CheckLater(id);
+            return;
+        }
+        if (Motion.Reduced)
+        {
+            var samples = TrafficMonitor.Snapshot();
+            if (samples.Length > 0 && samples[^1].Time != lastSampleSeen)
             {
-                var samples = TrafficMonitor.Snapshot();
-                if (samples.Length > 0 && samples[^1].Time != lastSampleSeen)
-                {
-                    lastSampleSeen = samples[^1].Time;
-                    InvalidateVisual();
-                }
-            }
-            else if (now - lastRender >= FrameSeconds)
-            {
+                lastSampleSeen = samples[^1].Time;
                 InvalidateVisual();
             }
+            CheckLater(id);   // one step per new sample: a look four times a second is enough
+            return;
         }
-        RequestFrame();
+        if (TrafficMonitor.Clock.Elapsed.TotalSeconds - lastRender >= FrameSeconds)
+            InvalidateVisual();
+        RequestFrame(id);
     }
 
     public override void Render(DrawingContext context)
@@ -206,7 +250,7 @@ internal sealed class ActivityChart : Control
         foreach (var f in new[] { 0, 0.5, 1 })
         {
             var y = Math.Round(top + (h - 3 - top) * f) + 0.5;
-            context.DrawLine(GridPen, new Point(0, y), new Point(w, y));
+            context.DrawLine(gridPen, new Point(0, y), new Point(w, y));
         }
 
         if (samples.Length >= 2)
@@ -253,9 +297,6 @@ internal sealed class ActivityChart : Control
         }
     }
 
-    private static readonly ImmutableSolidColorBrush DownText = new(Color.Parse("#D6E7FC"));
-    private static readonly ImmutableSolidColorBrush UpText = new(Color.Parse("#8DB8F2"));
-
     /// <summary>
     /// Space above the plot for a bump's number: 15 px SemiBold is ~19.5 px tall + 5 px gap, with room to spare because
     /// a bump can touch the top while the scale is still easing up (24 px was seen to fall back beside the bump).
@@ -283,7 +324,7 @@ internal sealed class ActivityChart : Control
             // Slow spring: from 60 % size, a gentle ~5 % overshoot at ~0.45 s, settled by ~1 s; fades in over 0.35 s.
             var scale = Motion.Reduced ? 1 : 1 - 0.4 * Math.Exp(-4.5 * age) * Math.Cos(7 * age);
             var opacity = (Motion.Reduced ? 1 : Math.Min(1, age / 0.35)) * Math.Min(edge, life);
-            var brush = b.Down ? DownText : UpText;
+            var brush = b.Down ? downText : upText;
 
             // Just the number: no dot, ring or box (user, 2026-11-16: "simple yet beautiful").
             var text = new FormattedText((b.Down ? "↓ " : "↑ ") + Format(b.Mbps), CultureInfo.CurrentCulture,

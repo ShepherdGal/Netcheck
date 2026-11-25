@@ -96,13 +96,17 @@
              the button's own rounded shape (radius 12 − 1 px border), text keeps the button's 20 × 11 padding. -->
         <Button x:Name="StopButton" Theme="{StaticResource NcQuietButton}" MinWidth="150" Padding="0"
                 HorizontalAlignment="Center" HorizontalContentAlignment="Stretch" AutomationProperties.Name="Stop">
-          <Border CornerRadius="11" ClipToBounds="True">
+          <Border CornerRadius="13" ClipToBounds="True">
             <Panel>
-              <Border x:Name="StopFill" HorizontalAlignment="Left" Width="0">
+              <!-- Full width, scaled from the left: the fill grows without a layout pass every frame (no stutter). -->
+              <Border x:Name="StopFill" RenderTransformOrigin="0%,50%">
+                <Border.RenderTransform>
+                  <ScaleTransform ScaleX="0" />
+                </Border.RenderTransform>
                 <Border.Background>
                   <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                    <GradientStop Color="#2E8DB8F2" Offset="0" />
-                    <GradientStop Color="#578DB8F2" Offset="1" />
+                    <GradientStop Color="{DynamicResource StopFillFromColor}" Offset="0" />
+                    <GradientStop Color="{DynamicResource StopFillToColor}" Offset="1" />
                   </LinearGradientBrush>
                 </Border.Background>
               </Border>

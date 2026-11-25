@@ -20,14 +20,13 @@ internal sealed class SpringWave : Control
     // Peak of e^(−4t)·sin(7t) is ≈ 0.476 (at t ≈ 0.15 s); scale so the highest point is Rise px.
     private const double Amplitude = Rise / 0.476;
 
-    private readonly IBrush brush;
+    private IBrush brush => this.TryFindResource("AccentBrush", ActualThemeVariant, out var found) && found is IBrush themed ? themed : Brushes.Gray;
     // One clock for every wave: the strip is rebuilt at each stage change, and the waves must carry on in step.
     private static readonly Stopwatch clock = Stopwatch.StartNew();
     private bool attached;
 
     public SpringWave(string label)
     {
-        brush = (IBrush)Application.Current!.FindResource("AccentBrush")!;
         Width = 3 * Dot + 2 * Gap;
         Height = Dot + Rise + 2;
         HorizontalAlignment = HorizontalAlignment.Center;
@@ -41,8 +40,9 @@ internal sealed class SpringWave : Control
     {
         base.OnAttachedToVisualTree(e);
         attached = true;
+        loop++;
         if (Moving)
-            NextFrame();
+            NextFrame(loop);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -51,18 +51,29 @@ internal sealed class SpringWave : Control
         base.OnDetachedFromVisualTree(e);
     }
 
-    private void NextFrame() => TopLevel.GetTopLevel(this)?.RequestAnimationFrame(_ =>
+    private int loop;   // one frame loop per attach; an older loop's callback ends itself
+
+    private void NextFrame(int id) => TopLevel.GetTopLevel(this)?.RequestAnimationFrame(_ =>
     {
-        if (!attached || !IsEffectivelyVisible)
-            return;   // stops when the reading is replaced, the page changes or the strip is hidden
+        if (!attached || id != loop)
+            return;   // stops when the reading is replaced or the page changes
+        if (!IsEffectivelyVisible)
+        {
+            // Hidden for now (e.g. the details view is open): look again shortly instead of stopping for good, so the
+            // dots move again when the strip comes back.
+            Avalonia.Threading.DispatcherTimer.RunOnce(() => NextFrame(id), TimeSpan.FromMilliseconds(250),
+                Avalonia.Threading.DispatcherPriority.Background);
+            return;
+        }
         InvalidateVisual();
-        NextFrame();
+        NextFrame(id);
     });
 
     public override void Render(DrawingContext context)
     {
         var now = clock.Elapsed.TotalSeconds;
         var rest = Bounds.Height - Dot / 2 - 1;
+        var brush = this.brush;   // one theme lookup per frame, not one per dot
         for (var i = 0; i < 3; i++)
         {
             double lift = 0, glow = 0;

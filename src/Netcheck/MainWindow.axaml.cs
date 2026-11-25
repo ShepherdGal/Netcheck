@@ -25,6 +25,7 @@ public sealed partial class MainWindow : Window
         foreach (var tab in Tabs.Children.OfType<RadioButton>())
             tab.IsCheckedChanged += OnTabChecked;
         SettingsButton.Click += (_, _) => ShowSettings();
+        ThemeManager.ExtraRoots = () => pages.Values;
         Netcheck.Controls.SelectionSlider.Attach(TabIndicator, Tabs);
         Navigate("check");
         Opened += (_, _) =>

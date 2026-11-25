@@ -8,8 +8,8 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="56"
         WindowDecorationsTheme="{StaticResource NcChrome}"
-        Background="{StaticResource BgBrush}"
-        Foreground="{StaticResource InkBrush}"
+        Background="{DynamicResource BgBrush}"
+        Foreground="{DynamicResource InkBrush}"
         FontFamily="{StaticResource UiFont}"
         FontSize="{StaticResource TextBody}">
   <!-- Fixed-size window. The glow is drawn at the real window size (outside the scaler) so it looks the same at
@@ -26,9 +26,9 @@
         <Viewbox Width="22" Height="22">
           <Canvas Width="24" Height="24">
             <!-- Two arcs = the two gauges (download, upload) meeting at the needle hub. -->
-            <Path Data="M4.5,16 A7.5,7.5 0 0 1 11.5,8.5" Stroke="{StaticResource DownToBrush}" StrokeThickness="2.2" StrokeLineCap="Round" />
-            <Path Data="M19.5,16 A7.5,7.5 0 0 0 14.5,8.9" Stroke="{StaticResource UpFromBrush}" StrokeThickness="2.2" StrokeLineCap="Round" />
-            <Ellipse Canvas.Left="10.2" Canvas.Top="14.2" Width="3.6" Height="3.6" Fill="{StaticResource InkBrush}" />
+            <Path Data="M4.5,16 A7.5,7.5 0 0 1 11.5,8.5" Stroke="{DynamicResource DownToBrush}" StrokeThickness="2.2" StrokeLineCap="Round" />
+            <Path Data="M19.5,16 A7.5,7.5 0 0 0 14.5,8.9" Stroke="{DynamicResource UpFromBrush}" StrokeThickness="2.2" StrokeLineCap="Round" />
+            <Ellipse Canvas.Left="10.2" Canvas.Top="14.2" Width="3.6" Height="3.6" Fill="{DynamicResource InkBrush}" />
           </Canvas>
         </Viewbox>
         <TextBlock x:Name="BrandText" Text="Netcheck" FontWeight="SemiBold" FontSize="17" VerticalAlignment="Center" />
@@ -40,7 +40,7 @@
         <Panel Width="18" Height="18">
         <!-- Green dot: a verified newer release is ready (cleared once Settings has been opened). -->
         <Ellipse x:Name="UpdateDot" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Top"
-                 Margin="0,-4,-5,0" Fill="{StaticResource GoodBrush}" Stroke="{StaticResource BgBrush}" StrokeThickness="2"
+                 Margin="0,-4,-5,0" Fill="{DynamicResource GoodBrush}" Stroke="{DynamicResource BgBrush}" StrokeThickness="2"
                  IsVisible="False" IsHitTestVisible="False" ZIndex="1" />
         <Viewbox Width="18" Height="18">
           <Canvas Width="24" Height="24">
@@ -56,11 +56,11 @@
     <!-- Tabs on their own row under the title bar (Check v2, 2026-11-16). -->
     <!-- Spacing scale (design rules): title-bar controls end at 46 px; ~32 px (visible) to the tab bar, 32 px from it to every page title. -->
     <Border Grid.Row="1" x:Name="NavFrame" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,14,0,0" Padding="4"
-            Background="{StaticResource SelBarBrush}" BorderBrush="{StaticResource SelBorderBrush}"
+            Background="{DynamicResource SelBarBrush}" BorderBrush="{DynamicResource SelBorderBrush}"
             BorderThickness="1" CornerRadius="14">
       <Panel>
         <Border x:Name="TabIndicator" HorizontalAlignment="Left" Width="0" CornerRadius="{StaticResource RadiusTab}"
-                Background="{StaticResource SelPillBrush}" />
+                Background="{DynamicResource SelPillBrush}" />
         <StackPanel x:Name="Tabs" Orientation="Horizontal" Spacing="4">
           <RadioButton Theme="{StaticResource NcTab}" GroupName="MainTabs" Tag="check" Content="Check" IsChecked="True" />
           <RadioButton Theme="{StaticResource NcTab}" GroupName="MainTabs" Tag="dns" Content="DNS" />
@@ -75,14 +75,14 @@
 
     <!-- The one confirm dialog (Clear history, Go back). Never nested; Escape or Cancel closes it. -->
     <Panel Grid.RowSpan="3" x:Name="ConfirmLayer" IsVisible="False">
-      <Border Background="{StaticResource ScrimBrush}" />
-      <Border Width="460" Padding="28,28,28,22" CornerRadius="18" Background="{StaticResource DialogBrush}"
-              BorderBrush="{StaticResource LineBrush}" BorderThickness="1" BoxShadow="{StaticResource EdgeLight}"
+      <Border Background="{DynamicResource ScrimBrush}" />
+      <Border Width="460" Padding="28,28,28,22" CornerRadius="18" Background="{DynamicResource DialogBrush}"
+              BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" BoxShadow="{StaticResource EdgeLight}"
               HorizontalAlignment="Center" VerticalAlignment="Center">
         <StackPanel>
           <TextBlock x:Name="ConfirmTitle" FontSize="24" FontWeight="SemiBold" TextWrapping="Wrap" />
           <TextBlock x:Name="ConfirmText" Margin="0,8,0,0" FontSize="17" LineHeight="24" TextWrapping="Wrap"
-                     Foreground="{StaticResource Ink2Brush}" />
+                     Foreground="{DynamicResource Ink2Brush}" />
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,16,0,0">
             <Button x:Name="ConfirmCancel" Theme="{StaticResource NcQuietButton}" Content="Cancel" MinWidth="96" />
             <Button x:Name="ConfirmOk" Theme="{StaticResource NcPrimaryButton}" MinWidth="96" />

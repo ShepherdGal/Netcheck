@@ -450,8 +450,8 @@ public sealed partial class BoostPage : UserControl
     };
 
     private static T? Find<T>(string key) where T : class =>
-        Application.Current!.TryFindResource(key, out var value) ? value as T : null;
+        ThemeManager.Resource(key) as T;
 
     private static IBrush Brush(string key) =>
-        Application.Current!.TryFindResource(key, out var value) && value is IBrush brush ? brush : Brushes.Gray;
+        ThemeManager.Brush(key);
 }

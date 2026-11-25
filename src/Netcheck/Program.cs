@@ -40,7 +40,10 @@ internal static class Program
         using var instance = OperatingSystem.IsWindows() ? NetcheckInstance.TryAcquire(
             args.Contains(Updater.WaitSwitch) ? TimeSpan.FromSeconds(20) : TimeSpan.Zero) : null;
         if (OperatingSystem.IsWindows() && instance is null)
+        {
+            NetcheckInstance.ShowRunning();   // already open: show that window instead of doing nothing
             return 0;
+        }
 
         // One-file build: graphics libraries checked and loaded from a folder that fits who runs this (P14).
         if (OperatingSystem.IsWindows())
@@ -67,6 +70,14 @@ public sealed class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // Safety net: an unexpected error in a button handler must not close the app. Measurements and history are
+        // separate, and Windows changes run in the helper with their own journal, so carrying on is safe.
+        Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (_, e) =>
+        {
+            System.Diagnostics.Trace.TraceError($"Netcheck: unexpected error: {e.Exception}");
+            e.Handled = true;
+        };
+        ThemeManager.ApplySaved(this);
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             if (ShowUninstall)

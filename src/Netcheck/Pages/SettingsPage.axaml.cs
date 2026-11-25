@@ -22,6 +22,7 @@ public sealed partial class SettingsPage : UserControl
         SupportLink.Click += (_, _) => Updater.Open(SupportUrl);
         sizeSlider = Netcheck.Controls.SelectionSlider.Attach(SizePill, Sizes);
         Netcheck.Controls.SelectionSlider.Attach(UnitPill, Units);
+        Netcheck.Controls.SelectionSlider.Attach(ThemePill, Themes);
         AttachedToVisualTree += (_, _) =>
         {
             BuildSizes();
@@ -31,6 +32,9 @@ public sealed partial class SettingsPage : UserControl
                 ? "Servers, data used and how each reading is worked out."
                 : "Run a check first, then see how it was measured.";
             var bytes = SpeedUnits.Family(UiPreferences.Current.SpeedUnit) == SpeedFamily.Bytes;
+            var light = UiPreferences.Current.Theme == ThemeManager.LightName;
+            DarkTheme.IsChecked = !light;
+            LightTheme.IsChecked = light;
             BitsUnit.IsChecked = !bytes;
             BytesUnit.IsChecked = bytes;
             AutoSwitch.IsChecked = UiPreferences.Current.AutoUpdateCheck;
@@ -47,6 +51,8 @@ public sealed partial class SettingsPage : UserControl
         };
 
         MethodButton.Click += (_, _) => Window?.ShowCheckDetails();
+        DarkTheme.IsCheckedChanged += (_, _) => SetTheme();
+        LightTheme.IsCheckedChanged += (_, _) => SetTheme();
         BitsUnit.IsCheckedChanged += (_, _) => SetUnits();
         BytesUnit.IsCheckedChanged += (_, _) => SetUnits();
         FolderButton.Click += (_, _) =>
@@ -88,6 +94,13 @@ public sealed partial class SettingsPage : UserControl
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
         }
+    }
+
+    private void SetTheme()
+    {
+        if (DarkTheme.IsChecked != true && LightTheme.IsChecked != true)
+            return;
+        ThemeManager.Choose(LightTheme.IsChecked == true ? ThemeManager.LightName : ThemeManager.DarkName);
     }
 
     private void SetUnits()
@@ -193,7 +206,7 @@ public sealed partial class SettingsPage : UserControl
         if (Updater.HasOffer && offer is not null)
         {
             Version(offer.Version.ToString(), "  is ready", $"You have {current}.");
-            VersionLabel.Foreground = (IBrush?)this.FindResource("GoodBrush");
+            VersionLabel.Foreground = ThemeManager.Brush("GoodBrush");
             Link("What's new", Updater.OpenReleasePage);
             if (installed)
                 Button("Update Now", () => _ = Updater.UpdateAsync());

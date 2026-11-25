@@ -4,8 +4,8 @@
         Title="Uninstall Netcheck" Icon="/Assets/Netcheck.ico"
         Width="520" SizeToContent="Height" CanResize="False" CanMaximize="False"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource DialogBrush}"
-        Foreground="{StaticResource InkBrush}"
+        Background="{DynamicResource DialogBrush}"
+        Foreground="{DynamicResource InkBrush}"
         FontFamily="{StaticResource UiFont}"
         FontSize="{StaticResource TextBody}">
   <!-- Shown by Apps & features → Uninstall only when Netcheck still has a DNS switch or Boost change in place
@@ -13,7 +13,7 @@
   <StackPanel Margin="28,26,28,22">
     <TextBlock x:Name="Heading" Text="Undo Netcheck's changes first?" FontSize="24" FontWeight="SemiBold" TextWrapping="Wrap" />
     <TextBlock x:Name="Body" Margin="0,10,0,0" FontSize="17" LineHeight="24" TextWrapping="Wrap"
-               Foreground="{StaticResource Ink2Brush}" />
+               Foreground="{DynamicResource Ink2Brush}" />
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,24,0,0">
       <Button x:Name="KeepButton" Theme="{StaticResource NcQuietButton}" Content="Keep Them and Uninstall" />
       <Button x:Name="UndoButton" Theme="{StaticResource NcPrimaryButton}" Content="Undo and Uninstall" />

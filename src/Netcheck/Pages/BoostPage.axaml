@@ -13,10 +13,10 @@
         <TextBlock x:Name="MainLead" Classes="pageLead" Text="Small fixes that keep your connection steady. Nothing risky." />
         <!-- What Boost tuned for: the connection carrying the internet (cable or Wi-Fi), P8. -->
         <Border x:Name="TunedChip" HorizontalAlignment="Center" Padding="12,5" CornerRadius="999"
-                Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" IsVisible="False">
+                Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" IsVisible="False">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <Ellipse Width="7" Height="7" Fill="{StaticResource AccentBrush}" VerticalAlignment="Center" />
-            <TextBlock x:Name="TunedText" FontSize="16" Foreground="{StaticResource Ink2Brush}" VerticalAlignment="Center" />
+            <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+            <TextBlock x:Name="TunedText" FontSize="16" Foreground="{DynamicResource Ink2Brush}" VerticalAlignment="Center" />
           </StackPanel>
         </Border>
       </StackPanel>
@@ -34,9 +34,9 @@
       <!-- Links carry ~15 px of click area and letter space; margin 0 = 16 px visible below the card (measured). -->
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6">
         <Button x:Name="ChooseLink" Theme="{StaticResource NcLinkButton}" Content="Choose Myself" />
-        <TextBlock Text="·" Foreground="{StaticResource Ink3Brush}" VerticalAlignment="Center" />
+        <TextBlock Text="·" Foreground="{DynamicResource Ink3Brush}" VerticalAlignment="Center" />
         <Button x:Name="MythsLink" Theme="{StaticResource NcLinkButton}" Content="Things We Don't Change" />
-        <TextBlock x:Name="UndoDot" Text="·" Foreground="{StaticResource Ink3Brush}" VerticalAlignment="Center" IsVisible="False" />
+        <TextBlock x:Name="UndoDot" Text="·" Foreground="{DynamicResource Ink3Brush}" VerticalAlignment="Center" IsVisible="False" />
         <Button x:Name="UndoLink" Theme="{StaticResource NcLinkButton}" Content="Undo My Boost Changes" IsVisible="False" />
       </StackPanel>
     </StackPanel>
@@ -56,7 +56,7 @@
       </Border>
       <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Margin="0,16,0,0">
         <CheckBox x:Name="RestoreCheck" Theme="{StaticResource NcCheck}" IsChecked="True">
-          <TextBlock Text="Make a restore point first" FontSize="17" Foreground="{StaticResource Ink2Brush}" />
+          <TextBlock Text="Make a restore point first" FontSize="17" Foreground="{DynamicResource Ink2Brush}" />
         </CheckBox>
         <!-- Portable copy (P12b): the restore point can't be used there, so its place offers the install. -->
         <StackPanel x:Name="ChooseInstallRow" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="False">

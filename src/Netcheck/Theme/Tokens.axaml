@@ -1,91 +1,226 @@
-<!-- Netcheck design tokens — "Dusk" (design plan §4). Every color, size and radius used by the UI comes from here.
-     Surfaces are translucent "glass" over the night-blue base. Brushes that fade in from nothing use a zero-alpha
-     copy of the SAME color ("Clear" variants), so a hover only changes opacity and never passes through a pale tint. -->
+<!-- Netcheck design tokens. Two looks, one design: "Dusk" (dark, the original) and "Dawn" (light), which is Dusk turned
+     over: the same layout, tints and glow with only the lightness flipped (user, 2026-11-25; mockup docs/mockups/light-theme.html).
+     Every themed colour and brush lives in the two ThemeDictionaries below and is read with DynamicResource, so switching
+     Application.RequestedThemeVariant restyles the whole app. Brushes that fade in from nothing use a zero-alpha copy of the
+     SAME colour ("Clear" variants), so a hover only changes opacity and never passes through a pale tint. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System">
-  <!-- Base -->
-  <Color x:Key="BgColor">#0E1828</Color>
-  <Color x:Key="GlowColor">#18294A</Color>
-  <Color x:Key="SurfaceColor">#0BFFFFFF</Color>       <!-- glass, ~4 % white -->
-  <Color x:Key="Surface2Color">#17FFFFFF</Color>      <!-- hover / selected glass, ~9 % -->
-  <Color x:Key="LineColor">#38A0BEE6</Color>          <!-- hairline edge: soft blue 22 % (card style B, 2026-11-17; was 9 % white) -->
-  <Color x:Key="LineStrongColor">#2EFFFFFF</Color>
-  <!-- Text -->
-  <Color x:Key="InkColor">#E9F0FA</Color>
-  <Color x:Key="Ink2Color">#9DB0C8</Color>
-  <Color x:Key="Ink3Color">#6F84A0</Color>
-  <!-- Accent: one calm blue for the primary button, links, focus and the active tab -->
-  <Color x:Key="AccentColor">#8DB8F2</Color>
-  <Color x:Key="AccentHoverColor">#A6C8F5</Color>
-  <Color x:Key="AccentPressedColor">#79A6E4</Color>
-  <Color x:Key="AccentInkColor">#0B1726</Color>
-  <Color x:Key="AccentSoftColor">#1F8DB8F2</Color>
-  <!-- Gauges: download light ice blue, upload deeper blue -->
-  <Color x:Key="DownFromColor">#7FA9E6</Color>
-  <Color x:Key="DownToColor">#D6E7FC</Color>
-  <Color x:Key="UpFromColor">#5E8CCB</Color>
-  <Color x:Key="UpToColor">#A9C7EF</Color>
-  <!-- Status: text and dots only -->
-  <Color x:Key="GoodColor">#62C47F</Color>
-  <Color x:Key="FairColor">#F2C26B</Color>
-  <Color x:Key="PoorColor">#E5685D</Color>
-  <Color x:Key="InfoColor">#9CC3F5</Color>
-  <Color x:Key="NeutralColor">#8D9AA8</Color>
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="BgColor">#0E1828</Color>
+      <Color x:Key="GlowColor">#18294A</Color>
+      <Color x:Key="SurfaceColor">#0BFFFFFF</Color>
+      <Color x:Key="Surface2Color">#17FFFFFF</Color>
+      <Color x:Key="LineColor">#38A0BEE6</Color>
+      <Color x:Key="LineStrongColor">#2EFFFFFF</Color>
+      <Color x:Key="InkColor">#E9F0FA</Color>
+      <Color x:Key="Ink2Color">#9DB0C8</Color>
+      <Color x:Key="Ink3Color">#6F84A0</Color>
+      <Color x:Key="AccentColor">#8DB8F2</Color>
+      <Color x:Key="AccentHoverColor">#A6C8F5</Color>
+      <Color x:Key="AccentPressedColor">#79A6E4</Color>
+      <Color x:Key="AccentInkColor">#0B1726</Color>
+      <Color x:Key="AccentSoftColor">#1F8DB8F2</Color>
+      <Color x:Key="DownFromColor">#7FA9E6</Color>
+      <Color x:Key="DownToColor">#D6E7FC</Color>
+      <Color x:Key="UpFromColor">#5E8CCB</Color>
+      <Color x:Key="UpToColor">#A9C7EF</Color>
+      <Color x:Key="GoodColor">#62C47F</Color>
+      <Color x:Key="FairColor">#F2C26B</Color>
+      <Color x:Key="PoorColor">#E5685D</Color>
+      <Color x:Key="InfoColor">#9CC3F5</Color>
+      <Color x:Key="NeutralColor">#8D9AA8</Color>
+      <Color x:Key="ChartDownColor">#D6E7FC</Color>
+      <Color x:Key="ChartUpColor">#5E8CCB</Color>
+      <Color x:Key="ChartDownTextColor">#D6E7FC</Color>
+      <Color x:Key="ChartUpTextColor">#8DB8F2</Color>
+      <Color x:Key="ChartGridColor">#0DFFFFFF</Color>
+      <Color x:Key="GaugeTipColor">#FFFFFF</Color>
+      <Color x:Key="StopFillFromColor">#2E8DB8F2</Color>
+      <Color x:Key="StopFillToColor">#578DB8F2</Color>
+      <SolidColorBrush x:Key="BgBrush" Color="#0E1828" />
+      <SolidColorBrush x:Key="DialogBrush" Color="#14213A" />
+      <SolidColorBrush x:Key="ScrimBrush" Color="#9E060B14" />
+      <SolidColorBrush x:Key="SurfaceBrush" Color="#0BFFFFFF" />
+      <SolidColorBrush x:Key="Surface2Brush" Color="#17FFFFFF" />
+      <SolidColorBrush x:Key="Surface2ClearBrush" Color="#00FFFFFF" />
+      <SolidColorBrush x:Key="LineBrush" Color="#38A0BEE6" />
+      <SolidColorBrush x:Key="LineStrongBrush" Color="#2EFFFFFF" />
+      <SolidColorBrush x:Key="InkBrush" Color="#E9F0FA" />
+      <SolidColorBrush x:Key="Ink2Brush" Color="#9DB0C8" />
+      <SolidColorBrush x:Key="Ink3Brush" Color="#6F84A0" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#8DB8F2" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#A6C8F5" />
+      <SolidColorBrush x:Key="AccentPressedBrush" Color="#79A6E4" />
+      <SolidColorBrush x:Key="AccentInkBrush" Color="#0B1726" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#1F8DB8F2" />
+      <SolidColorBrush x:Key="AccentSoftClearBrush" Color="#008DB8F2" />
+      <SolidColorBrush x:Key="GoodBrush" Color="#62C47F" />
+      <SolidColorBrush x:Key="FairBrush" Color="#F2C26B" />
+      <SolidColorBrush x:Key="SupportBrush" Color="#E8C483" />
+      <SolidColorBrush x:Key="PoorBrush" Color="#E5685D" />
+      <SolidColorBrush x:Key="InfoBrush" Color="#9CC3F5" />
+      <SolidColorBrush x:Key="NeutralBrush" Color="#8D9AA8" />
+      <SolidColorBrush x:Key="SelBarBrush" Color="#208DB8F2" />
+      <SolidColorBrush x:Key="CardBrush" Color="#128DB8F2" />
+      <SolidColorBrush x:Key="SelBorderBrush" Color="#47A0BEE6" />
+      <SolidColorBrush x:Key="SelPillBrush" Color="#31A0BEE6" />
+      <SolidColorBrush x:Key="SelInkBrush" Color="#AAC0DC" />
+      <SolidColorBrush x:Key="CloseHoverBrush" Color="#C42B1C" />
+      <SolidColorBrush x:Key="CloseHoverClearBrush" Color="#00C42B1C" />
+      <SolidColorBrush x:Key="GaugeTrackBrush" Color="#12FFFFFF" />
+      <SolidColorBrush x:Key="GaugeTickBrush" Color="#D6E7FC" />
+      <SolidColorBrush x:Key="DownToBrush" Color="#D6E7FC" />
+      <SolidColorBrush x:Key="UpFromBrush" Color="#5E8CCB" />
+      <SolidColorBrush x:Key="GaugeTipBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="PrimaryInkBrush" Color="#0B1726" />
+      <SolidColorBrush x:Key="PrimaryEdgeBrush" Color="#59FFFFFF" />
+      <SolidColorBrush x:Key="QuietFillBrush" Color="#1A8DB8F2" />
+      <SolidColorBrush x:Key="QuietEdgeBrush" Color="#4DA0BEE6" />
+      <SolidColorBrush x:Key="QuietHoverBrush" Color="#2E8DB8F2" />
+      <SolidColorBrush x:Key="OutlineBrush" Color="#40FFFFFF" />
+      <SolidColorBrush x:Key="RowHoverBrush" Color="#06FFFFFF" />
+      <SolidColorBrush x:Key="RowSelectedBrush" Color="#148DB8F2" />
+      <SolidColorBrush x:Key="SwitchTrackBrush" Color="#1AFFFFFF" />
+      <SolidColorBrush x:Key="SwitchTrackEdgeBrush" Color="#1FFFFFFF" />
+      <SolidColorBrush x:Key="SwitchKnobBrush" Color="#38FFFFFF" />
+      <SolidColorBrush x:Key="SwitchKnobEdgeBrush" Color="#59FFFFFF" />
+      <SolidColorBrush x:Key="SwitchOnEdgeBrush" Color="#59FFFFFF" />
+      <SolidColorBrush x:Key="SwitchOnKnobBrush" Color="#8CFFFFFF" />
+      <SolidColorBrush x:Key="SwitchOnKnobEdgeBrush" Color="#BFFFFFFF" />
+      <LinearGradientBrush x:Key="DownGaugeBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#7FA9E6" />
+        <GradientStop Offset="1" Color="#D6E7FC" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="UpGaugeBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#5E8CCB" />
+        <GradientStop Offset="1" Color="#A9C7EF" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="SupportGlowBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#1AE8C483" />
+        <GradientStop Offset="0.85" Color="#00E8C483" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="PrimaryFillBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#9CC3F5" />
+        <GradientStop Offset="1" Color="#7FA9E6" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="SwitchOnBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#9CC3F5" />
+        <GradientStop Offset="1" Color="#7FA9E6" />
+      </LinearGradientBrush>
+      <!-- Underglow (user, 2026-11-25): light falls only below the pill (offset down, negative spread). Dark and Light both at the "Subtler 75 %" step (user changed Dark from 55 %). -->
+      <BoxShadows x:Key="PrimaryHighlight">inset 0 1 0 0 #66FFFFFF, 0 9 16 -7 #9E8DB8F2, 0 14 30 -10 #578DB8F2</BoxShadows>
+      <BoxShadows x:Key="PrimaryHighlightHover">inset 0 1 0 0 #66FFFFFF, 0 10 18 -6 #CC8DB8F2, 0 16 34 -9 #708DB8F2</BoxShadows>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Light">
+      <Color x:Key="BgColor">#EEF3FA</Color>
+      <Color x:Key="GlowColor">#D2E1F5</Color>
+      <Color x:Key="SurfaceColor">#0D2E68BE</Color>
+      <Color x:Key="Surface2Color">#172E68BE</Color>
+      <Color x:Key="LineColor">#332E68BE</Color>
+      <Color x:Key="LineStrongColor">#402E68BE</Color>
+      <Color x:Key="InkColor">#0F1B2E</Color>
+      <Color x:Key="Ink2Color">#46597A</Color>
+      <Color x:Key="Ink3Color">#71849F</Color>
+      <Color x:Key="AccentColor">#2F6BC2</Color>
+      <Color x:Key="AccentHoverColor">#255CAD</Color>
+      <Color x:Key="AccentPressedColor">#1D4F98</Color>
+      <Color x:Key="AccentInkColor">#FFFFFF</Color>
+      <Color x:Key="AccentSoftColor">#1F2F6BC2</Color>
+      <Color x:Key="DownFromColor">#A9C7EF</Color>
+      <Color x:Key="DownToColor">#2C61B5</Color>
+      <Color x:Key="UpFromColor">#C3D8F3</Color>
+      <Color x:Key="UpToColor">#4F82CC</Color>
+      <Color x:Key="GoodColor">#1E9450</Color>
+      <Color x:Key="FairColor">#B77A0B</Color>
+      <Color x:Key="PoorColor">#CE4338</Color>
+      <Color x:Key="InfoColor">#2F6BC2</Color>
+      <Color x:Key="NeutralColor">#7B8794</Color>
+      <Color x:Key="ChartDownColor">#2C61B5</Color>
+      <Color x:Key="ChartUpColor">#6C9BE0</Color>
+      <Color x:Key="ChartDownTextColor">#2C61B5</Color>
+      <Color x:Key="ChartUpTextColor">#4F82CC</Color>
+      <Color x:Key="ChartGridColor">#142E68BE</Color>
+      <Color x:Key="GaugeTipColor">#1B3F7E</Color>
+      <Color x:Key="StopFillFromColor">#2E2F6BC2</Color>
+      <Color x:Key="StopFillToColor">#592F6BC2</Color>
+      <SolidColorBrush x:Key="BgBrush" Color="#EEF3FA" />
+      <SolidColorBrush x:Key="DialogBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ScrimBrush" Color="#8C0F1B2E" />
+      <SolidColorBrush x:Key="SurfaceBrush" Color="#0D2E68BE" />
+      <SolidColorBrush x:Key="Surface2Brush" Color="#172E68BE" />
+      <SolidColorBrush x:Key="Surface2ClearBrush" Color="#002E68BE" />
+      <SolidColorBrush x:Key="LineBrush" Color="#332E68BE" />
+      <SolidColorBrush x:Key="LineStrongBrush" Color="#402E68BE" />
+      <SolidColorBrush x:Key="InkBrush" Color="#0F1B2E" />
+      <SolidColorBrush x:Key="Ink2Brush" Color="#46597A" />
+      <SolidColorBrush x:Key="Ink3Brush" Color="#71849F" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#2F6BC2" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#255CAD" />
+      <SolidColorBrush x:Key="AccentPressedBrush" Color="#1D4F98" />
+      <SolidColorBrush x:Key="AccentInkBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#1F2F6BC2" />
+      <SolidColorBrush x:Key="AccentSoftClearBrush" Color="#002F6BC2" />
+      <SolidColorBrush x:Key="GoodBrush" Color="#1E9450" />
+      <SolidColorBrush x:Key="FairBrush" Color="#B77A0B" />
+      <SolidColorBrush x:Key="SupportBrush" Color="#A87108" />
+      <SolidColorBrush x:Key="PoorBrush" Color="#CE4338" />
+      <SolidColorBrush x:Key="InfoBrush" Color="#2F6BC2" />
+      <SolidColorBrush x:Key="NeutralBrush" Color="#7B8794" />
+      <SolidColorBrush x:Key="SelBarBrush" Color="#1A2E68BE" />
+      <SolidColorBrush x:Key="CardBrush" Color="#112E68BE" />
+      <SolidColorBrush x:Key="SelBorderBrush" Color="#3D2E68BE" />
+      <SolidColorBrush x:Key="SelPillBrush" Color="#EBFFFFFF" />
+      <SolidColorBrush x:Key="SelInkBrush" Color="#4B6486" />
+      <SolidColorBrush x:Key="CloseHoverBrush" Color="#C42B1C" />
+      <SolidColorBrush x:Key="CloseHoverClearBrush" Color="#00C42B1C" />
+      <SolidColorBrush x:Key="GaugeTrackBrush" Color="#1A2E68BE" />
+      <SolidColorBrush x:Key="GaugeTickBrush" Color="#2C61B5" />
+      <SolidColorBrush x:Key="DownToBrush" Color="#2C61B5" />
+      <SolidColorBrush x:Key="UpFromBrush" Color="#6C9BE0" />
+      <SolidColorBrush x:Key="GaugeTipBrush" Color="#1B3F7E" />
+      <SolidColorBrush x:Key="PrimaryInkBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="PrimaryEdgeBrush" Color="#8CFFFFFF" />
+      <SolidColorBrush x:Key="QuietFillBrush" Color="#142E68BE" />
+      <SolidColorBrush x:Key="QuietEdgeBrush" Color="#472E68BE" />
+      <SolidColorBrush x:Key="QuietHoverBrush" Color="#242E68BE" />
+      <SolidColorBrush x:Key="OutlineBrush" Color="#402E68BE" />
+      <SolidColorBrush x:Key="RowHoverBrush" Color="#082E68BE" />
+      <SolidColorBrush x:Key="RowSelectedBrush" Color="#142F6BC2" />
+      <SolidColorBrush x:Key="SwitchTrackBrush" Color="#1A2E68BE" />
+      <SolidColorBrush x:Key="SwitchTrackEdgeBrush" Color="#382E68BE" />
+      <SolidColorBrush x:Key="SwitchKnobBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SwitchKnobEdgeBrush" Color="#472E68BE" />
+      <SolidColorBrush x:Key="SwitchOnEdgeBrush" Color="#8CFFFFFF" />
+      <SolidColorBrush x:Key="SwitchOnKnobBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SwitchOnKnobEdgeBrush" Color="#FFFFFF" />
+      <LinearGradientBrush x:Key="DownGaugeBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#A9C7EF" />
+        <GradientStop Offset="1" Color="#2C61B5" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="UpGaugeBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#C3D8F3" />
+        <GradientStop Offset="1" Color="#4F82CC" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="SupportGlowBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#1AA87108" />
+        <GradientStop Offset="0.85" Color="#00A87108" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="PrimaryFillBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#5B93E3" />
+        <GradientStop Offset="1" Color="#2F6BC2" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="SwitchOnBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#5B93E3" />
+        <GradientStop Offset="1" Color="#2F6BC2" />
+      </LinearGradientBrush>
+      <!-- Underglow, Light = "1 Subtler" in luminous sky blue (the deep button blue would read as a shadow). -->
+      <BoxShadows x:Key="PrimaryHighlight">inset 0 1 0 0 #73FFFFFF, 0 9 16 -7 #F25CA5FF, 0 14 30 -10 #8C5CA5FF</BoxShadows>
+      <BoxShadows x:Key="PrimaryHighlightHover">inset 0 1 0 0 #73FFFFFF, 0 10 18 -6 #FF5CA5FF, 0 16 34 -9 #B35CA5FF</BoxShadows>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
 
-  <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}" />
-  <SolidColorBrush x:Key="DialogBrush" Color="#14213A" />          <!-- the one confirm dialog -->
-  <SolidColorBrush x:Key="ScrimBrush" Color="#9E060B14" />          <!-- behind it, ~62 % -->
-  <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
-  <SolidColorBrush x:Key="Surface2Brush" Color="{StaticResource Surface2Color}" />
-  <SolidColorBrush x:Key="Surface2ClearBrush" Color="#00FFFFFF" />
-  <SolidColorBrush x:Key="LineBrush" Color="{StaticResource LineColor}" />
-  <SolidColorBrush x:Key="LineStrongBrush" Color="{StaticResource LineStrongColor}" />
-  <SolidColorBrush x:Key="InkBrush" Color="{StaticResource InkColor}" />
-  <SolidColorBrush x:Key="Ink2Brush" Color="{StaticResource Ink2Color}" />
-  <SolidColorBrush x:Key="Ink3Brush" Color="{StaticResource Ink3Color}" />
-  <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
-  <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
-  <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource AccentPressedColor}" />
-  <SolidColorBrush x:Key="AccentInkBrush" Color="{StaticResource AccentInkColor}" />
-  <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource AccentSoftColor}" />
-  <SolidColorBrush x:Key="AccentSoftClearBrush" Color="#008DB8F2" />
-  <SolidColorBrush x:Key="GoodBrush" Color="{StaticResource GoodColor}" />
-  <SolidColorBrush x:Key="FairBrush" Color="{StaticResource FairColor}" />
-  <!-- Support row (user, 2026-11-17: "a soft golden highlight ... fits the UI but looks different"). A warmer, softer gold
-       than the amber "fair" status colour, so it never reads as a warning. -->
-  <SolidColorBrush x:Key="SupportBrush" Color="#E8C483" />
-  <LinearGradientBrush x:Key="SupportGlowBrush" StartPoint="0%,0%" EndPoint="100%,0%">
-    <GradientStop Color="#1AE8C483" Offset="0" />
-    <GradientStop Color="#00E8C483" Offset="0.85" />
-  </LinearGradientBrush>
-  <SolidColorBrush x:Key="PoorBrush" Color="{StaticResource PoorColor}" />
-  <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}" />
-  <SolidColorBrush x:Key="NeutralBrush" Color="{StaticResource NeutralColor}" />
-  <!-- Pick-one bars (tab bar, App size, Speed units), matched to the user's reference 2026-11-17: blue-tinted bar
-       (accent at 12.5 % = #253754 on the base), even soft-blue border (#3F516D), blue-grey chosen pill (#3D5170 on the
-       bar), brighter blue labels (#AAC0DC). -->
-  <SolidColorBrush x:Key="SelBarBrush" Color="#208DB8F2" />
-  <!-- Cards (style B, user 2026-11-17): the tab bar's blue at 7 %, transparent so the page glow shows through. -->
-  <SolidColorBrush x:Key="CardBrush" Color="#128DB8F2" />
-  <SolidColorBrush x:Key="SelBorderBrush" Color="#47A0BEE6" />
-  <SolidColorBrush x:Key="SelPillBrush" Color="#31A0BEE6" />
-  <SolidColorBrush x:Key="SelInkBrush" Color="#AAC0DC" />
-  <SolidColorBrush x:Key="CloseHoverBrush" Color="#C42B1C" />
-  <SolidColorBrush x:Key="CloseHoverClearBrush" Color="#00C42B1C" />
-  <SolidColorBrush x:Key="GaugeTrackBrush" Color="#12FFFFFF" />
-  <SolidColorBrush x:Key="GaugeTickBrush" Color="{StaticResource DownToColor}" />
-  <SolidColorBrush x:Key="DownToBrush" Color="{StaticResource DownToColor}" />
-  <SolidColorBrush x:Key="UpFromBrush" Color="{StaticResource UpFromColor}" />
-
-  <LinearGradientBrush x:Key="DownGaugeBrush" StartPoint="0%,100%" EndPoint="100%,0%">
-    <GradientStop Offset="0" Color="{StaticResource DownFromColor}" />
-    <GradientStop Offset="1" Color="{StaticResource DownToColor}" />
-  </LinearGradientBrush>
-  <LinearGradientBrush x:Key="UpGaugeBrush" StartPoint="0%,100%" EndPoint="100%,0%">
-    <GradientStop Offset="0" Color="{StaticResource UpFromColor}" />
-    <GradientStop Offset="1" Color="{StaticResource UpToColor}" />
-  </LinearGradientBrush>
   <!-- The top glow (BgColor -> GlowColor) is rendered by Controls/GlowBackdrop.cs, band-free. -->
   <BoxShadows x:Key="EdgeLight">inset 0 1 0 0 #10FFFFFF</BoxShadows>
 
@@ -100,5 +235,9 @@
   <!-- Shape -->
   <CornerRadius x:Key="RadiusCard">18</CornerRadius>
   <CornerRadius x:Key="RadiusButton">12</CornerRadius>
+  <CornerRadius x:Key="RadiusPrimary">18</CornerRadius>      <!-- B Soft: ~40 % of the button height, never a full pill -->
+  <CornerRadius x:Key="RadiusPrimaryBig">21</CornerRadius>
+  <CornerRadius x:Key="RadiusQuiet">14</CornerRadius>        <!-- A Flat -->
+  <CornerRadius x:Key="RadiusQuietBig">16</CornerRadius>
   <CornerRadius x:Key="RadiusTab">10</CornerRadius>
 </ResourceDictionary>

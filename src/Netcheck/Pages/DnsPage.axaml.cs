@@ -289,7 +289,7 @@ public sealed partial class DnsPage : UserControl
         StopButton.Focus();
 
         var round = DnsRound.Quick;
-        SetStopFill(0, animate: false);
+        StartFill();
         var progress = new Progress<DnsBenchmarkProgress>(p =>
         {
             if (p.Round != round)
@@ -297,8 +297,6 @@ public sealed partial class DnsPage : UserControl
                 round = p.Round;
                 RaceLine.Text = "Closer test of the fastest";
             }
-            // The quick round is about a quarter of the time, the three closer passes the rest. Only ever forward.
-            SetStopFill(p.Round == DnsRound.Quick ? 0.25 * p.Fraction : 0.25 + 0.75 * p.Fraction);
             if (!lanes.TryGetValue(p.Server, out var lane))
                 return;
             if (p.Out)
@@ -314,10 +312,16 @@ public sealed partial class DnsPage : UserControl
             }
         });
 
-        DnsBenchmarkResult result;
+        DnsBenchmarkResult? result;
         try
         {
             result = await new DnsBenchmarkEngine().RunAsync(Goal, candidates, new DnsBenchmarkOptions(), progress, run.Token);
+        }
+        catch (Exception)
+        {
+            // An unexpected failure goes back to the start, like Stop; it used to be rethrown into the click handler,
+            // which closed the app.
+            result = null;
         }
         finally
         {
@@ -325,12 +329,14 @@ public sealed partial class DnsPage : UserControl
             run = null;
         }
         last = result;
-        if (result.Stopped || result.Ranked.Count == 0)
+        if (result is null || result.Stopped || result.Ranked.Count == 0)
         {
+            StopFillTimer();
             Show(FormView);
             FindButton.Focus();
             return;
         }
+        await FinishFillAsync();   // the fill reaches 100 % before the result takes over
         ShowResult(result);
     }
 
@@ -371,23 +377,82 @@ public sealed partial class DnsPage : UserControl
         }
     }
 
-    private double stopFill;
+    // ---------- the Stop button's fill ----------
+    // The fill is driven by a clock, not by the benchmark's progress reports (user, 2026-11-25): it glides from 0 to 100 %
+    // without ever pausing, even while the test stalls or races ahead between reports (they are front-loaded and stop
+    // for seconds, so following them made the fill jump and freeze). The clock's expected total is the page's "about
+    // 20 seconds" at first, then the length of the previous finished test. If the test runs long the fill keeps
+    // creeping toward (never reaching) the end; when the test finishes it eases to 100 % and the result appears.
 
-    /// <summary>
-    /// The Stop button fills with the benchmark's progress (0–1), easing forward and never moving back; still with
-    /// reduced motion (it steps instead).
-    /// </summary>
-    private void SetStopFill(double fraction, bool animate = true)
+    private Avalonia.Threading.DispatcherTimer? fillTimer;
+    private readonly System.Diagnostics.Stopwatch fillClock = new();
+    private TimeSpan fillLast;
+    private double fillShown;
+    private bool fillFinishing;
+    private static double expectedSeconds = 20;   // learned from the last finished test, this session only
+
+    private void StartFill()
     {
-        fraction = Math.Clamp(fraction, 0, 1);
-        if (animate && fraction <= stopFill)
-            return;
-        stopFill = fraction;
-        StopFill.Transitions = animate && !Motion.Reduced
-            ? [new Avalonia.Animation.DoubleTransition { Property = WidthProperty, Duration = TimeSpan.FromMilliseconds(600), Easing = Motion.EaseOut }]
-            : null;
-        var width = StopButton.Bounds.Width > 0 ? StopButton.Bounds.Width - 2 : 148;
-        StopFill.Width = width * fraction;
+        StopFillTimer();
+        fillShown = 0;
+        fillFinishing = false;
+        PaintFill();
+        fillClock.Restart();
+        fillLast = TimeSpan.Zero;
+        fillTimer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+        fillTimer.Tick += (_, _) => TickFill();
+        fillTimer.Start();
+    }
+
+    /// <summary>Where the clock says the fill should be: linear to 96 % at the expected time, then an ever-slower creep.</summary>
+    private double FillTarget(double seconds)
+    {
+        var p = seconds / expectedSeconds;
+        if (p <= 1)
+            return 0.96 * p;
+        return 0.96 + 0.035 * (1 - Math.Exp(-(p - 1) * 1.5));   // approaches 99.5 %, never arrives on its own
+    }
+
+    private void TickFill()
+    {
+        var now = fillClock.Elapsed;
+        var dt = Math.Min((now - fillLast).TotalSeconds, 0.1);
+        fillLast = now;
+        var target = fillFinishing ? 1 : FillTarget(now.TotalSeconds);
+        var tau = fillFinishing ? 0.12 : 0.35;   // seconds: how softly the fill follows its target (soft start, no steps)
+        var next = Motion.Reduced ? target : fillShown + (target - fillShown) * (1 - Math.Exp(-dt / tau));
+        fillShown = Math.Max(fillShown, next);
+        PaintFill();
+    }
+
+    private void PaintFill()
+    {
+        // A scale, not a width: changing Width re-ran layout for the whole page 60 times a second.
+        if (StopFill.RenderTransform is Avalonia.Media.ScaleTransform scale)
+            scale.ScaleX = Math.Clamp(fillShown, 0, 1);
+    }
+
+    /// <summary>Eases the fill to 100 % (about a third of a second) so the result never cuts it off.</summary>
+    private async Task FinishFillAsync()
+    {
+        fillFinishing = true;
+        expectedSeconds = Math.Clamp(fillClock.Elapsed.TotalSeconds, 8, 60);   // the next test's clock fits this one
+        var waited = 0;
+        while (fillShown < 0.995 && waited < 700 && fillTimer is not null)
+        {
+            await Task.Delay(16);
+            waited += 16;
+        }
+        fillShown = 1;
+        PaintFill();
+        await Task.Delay(Motion.Reduced ? 0 : 120);   // a beat at 100 %
+        StopFillTimer();
+    }
+
+    private void StopFillTimer()
+    {
+        fillTimer?.Stop();
+        fillTimer = null;
     }
 
     // ---------- result ----------
@@ -687,11 +752,11 @@ public sealed partial class DnsPage : UserControl
     private static string Ms(double ms) => ms.ToString(ms < 10 ? "0.#" : "0", CultureInfo.CurrentCulture);
 
     private static IBrush Brush(string key) =>
-        Application.Current!.TryFindResource(key, out var value) && value is IBrush brush ? brush : Brushes.Gray;
+        ThemeManager.Brush(key);
 
     private static IBrush ToneBrush(Tone tone)
     {
-        var key = tone switch { Tone.Good => "GoodColor", Tone.Fair => "FairColor", Tone.Poor => "PoorColor", _ => "NeutralColor" };
-        return new SolidColorBrush(Application.Current!.TryFindResource(key, out var v) && v is Color c ? c : Colors.Gray);
+        // The shared resource brush itself, so a theme switch can swap it for the other theme\'s copy.
+        return Brush(tone switch { Tone.Good => "GoodBrush", Tone.Fair => "FairBrush", Tone.Poor => "PoorBrush", _ => "NeutralBrush" });
     }
 }

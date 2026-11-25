@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.Threading;
 
 namespace Netcheck.Controls;
@@ -20,18 +21,20 @@ namespace Netcheck.Controls;
 /// </summary>
 public sealed class GlowBackdrop : Control
 {
-    private static readonly Color Base = Color.Parse("#0E1828");
-    private static readonly Color Glow = Color.Parse("#18294A");
+    // Base and glow colours come from the theme tokens (BgColor / GlowColor of Dusk or Dawn).
+    private Color baseColor = Color.Parse("#0E1828"), glowColor = Color.Parse("#18294A");
     private const double RadiusX = 0.70, RadiusY = 0.60;   // of width / height, centred on the top edge
 
     private WriteableBitmap? bitmap;
     private PixelSize rendered;
+    private ThemeVariant? renderedVariant;
     private readonly DispatcherTimer settle;
 
     public GlowBackdrop()
     {
         IsHitTestVisible = false;
         settle = new DispatcherTimer(TimeSpan.FromMilliseconds(120), DispatcherPriority.Background, (_, _) => Rebuild());
+        ActualThemeVariantChanged += (_, _) => Rebuild();   // a theme switch repaints at once, no settle delay
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
@@ -49,20 +52,26 @@ public sealed class GlowBackdrop : Control
         settle.Stop();
         var scale = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         var size = new PixelSize(Math.Max(1, (int)Math.Ceiling(Bounds.Width * scale)), Math.Max(1, (int)Math.Ceiling(Bounds.Height * scale)));
-        if (size == rendered && bitmap is not null)
+        if (size == rendered && bitmap is not null && renderedVariant == ActualThemeVariant)
             return;
+        baseColor = Token("BgColor", baseColor);
+        glowColor = Token("GlowColor", glowColor);
         // Plain 96 DPI bitmap, scaled down explicitly in Render (still 1 image pixel per screen pixel). A bitmap tagged
         // with the screen DPI was drawn 1.75× too large at 175 %, which cropped it and pushed the glow off to the right.
         var next = new WriteableBitmap(size, new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Opaque);
         using (var frame = next.Lock())
-            Paint(frame, size);
+            Paint(frame, size, baseColor, glowColor);
         bitmap?.Dispose();
         bitmap = next;
         rendered = size;
+        renderedVariant = ActualThemeVariant;
         InvalidateVisual();
     }
 
-    private static void Paint(ILockedFramebuffer frame, PixelSize size)
+    private Color Token(string key, Color fallback) =>
+        this.TryFindResource(key, ActualThemeVariant, out var value) && value is Color color ? color : fallback;
+
+    private static void Paint(ILockedFramebuffer frame, PixelSize size, Color Base, Color Glow)
     {
         var row = new int[size.Width];
         var cx = size.Width / 2.0;
@@ -97,7 +106,7 @@ public sealed class GlowBackdrop : Control
     public override void Render(DrawingContext context)
     {
         if (bitmap is null)
-            context.FillRectangle(new SolidColorBrush(Base), new Rect(Bounds.Size));
+            context.FillRectangle(new SolidColorBrush(baseColor), new Rect(Bounds.Size));
         else
             context.DrawImage(bitmap, new Rect(0, 0, rendered.Width, rendered.Height), new Rect(Bounds.Size));
     }

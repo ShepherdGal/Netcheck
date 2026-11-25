@@ -11,14 +11,14 @@
     </Style>
     <!-- The chosen item's pill: a separate Border that glides between choices (SelectionSlider, same motion as the tabs). -->
     <Style Selector="Border.selPill">
-      <Setter Property="Background" Value="{StaticResource SelPillBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SelPillBrush}" />
       <Setter Property="CornerRadius" Value="{StaticResource RadiusTab}" />
     </Style>
     <Style Selector="RadioButton.seg:disabled">
       <Setter Property="Opacity" Value="0.35" />
     </Style>
     <Style Selector="Grid.row">
-      <Setter Property="Margin" Value="24,16" />
+      <Setter Property="Margin" Value="24,12" />
       <Setter Property="MinHeight" Value="48" />
     </Style>
     <Style Selector="TextBlock.rowTitle">
@@ -27,14 +27,14 @@
     </Style>
     <Style Selector="TextBlock.rowHint">
       <Setter Property="FontSize" Value="17" />
-      <Setter Property="Foreground" Value="{StaticResource Ink2Brush}" />
+      <Setter Property="Foreground" Value="{DynamicResource Ink2Brush}" />
       <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
     <Style Selector="Border.pill">
       <Setter Property="Padding" Value="4" />
       <Setter Property="CornerRadius" Value="14" />
-      <Setter Property="Background" Value="{StaticResource SelBarBrush}" />
-      <Setter Property="BorderBrush" Value="{StaticResource SelBorderBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SelBarBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
@@ -50,9 +50,9 @@
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16">
         <TextBlock Classes="pageTitle" Text="Settings" />
         <Button x:Name="UpdateLink" Theme="{StaticResource NcLinkButton}" IsVisible="False" VerticalAlignment="Center"
-                Foreground="{StaticResource GoodBrush}" Padding="0,6" Margin="0,6,0,0">
+                Foreground="{DynamicResource GoodBrush}" Padding="0,6" Margin="0,6,0,0">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <Ellipse Width="7" Height="7" Fill="{StaticResource GoodBrush}" VerticalAlignment="Center" />
+            <Ellipse Width="7" Height="7" Fill="{DynamicResource GoodBrush}" VerticalAlignment="Center" />
             <TextBlock Text="Update available" FontSize="17" FontWeight="SemiBold" />
           </StackPanel>
         </Button>
@@ -74,8 +74,27 @@
             </Border>
           </Grid>
 
+          <!-- Theme: Dark (Dusk) or Light (Dawn), the same design turned over (user, 2026-11-25) -->
+          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+            <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
+              <StackPanel Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="rowTitle" Text="Theme" />
+                <TextBlock Classes="rowHint" Text="Dark or light. The same design either way." />
+              </StackPanel>
+              <Border Grid.Column="1" Classes="pill">
+                <Panel>
+                  <Border x:Name="ThemePill" Classes="selPill" />
+                  <StackPanel x:Name="Themes" Orientation="Horizontal" Spacing="4">
+                    <RadioButton x:Name="DarkTheme" Theme="{StaticResource NcTab}" Classes="seg" GroupName="Themes" Content="Dark" />
+                    <RadioButton x:Name="LightTheme" Theme="{StaticResource NcTab}" Classes="seg" GroupName="Themes" Content="Light" />
+                  </StackPanel>
+                </Panel>
+              </Border>
+            </Grid>
+          </Border>
+
           <!-- Speed units -->
-          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Speed units" />
@@ -94,7 +113,7 @@
           </Border>
 
           <!-- How the last check was measured -->
-          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="How the last check was measured" />
@@ -106,7 +125,7 @@
           </Border>
 
           <!-- Your data -->
-          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Your data" />
@@ -120,12 +139,12 @@
           </Border>
 
           <!-- Check for updates -->
-          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Check for updates" />
                 <TextBlock x:Name="UpdatesHint" Classes="rowHint">
-                  <Run x:Name="UpdatesWhen" Text="Once a day, from GitHub. " /><Run x:Name="LastChecked" Foreground="{StaticResource Ink3Brush}" />
+                  <Run x:Name="UpdatesWhen" Text="Once a day, from GitHub. " /><Run x:Name="LastChecked" Foreground="{DynamicResource Ink3Brush}" />
                 </TextBlock>
               </StackPanel>
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
@@ -137,7 +156,7 @@
           </Border>
 
           <!-- Open-source licences (P14): the texts ship inside Netcheck.exe; Show opens them as one text file. -->
-          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="rowTitle" Text="Open-source licences" />
@@ -149,7 +168,7 @@
           </Border>
 
           <!-- Version: installed / update ready / updating / portable / development -->
-          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
                 <TextBlock x:Name="VersionTitle" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center">
@@ -157,9 +176,9 @@
                 </TextBlock>
                 <TextBlock x:Name="VersionHint" Classes="rowHint" />
                 <Border x:Name="ProgressTrack" Width="300" Height="4" CornerRadius="2" Margin="0,8,0,0" HorizontalAlignment="Left"
-                        Background="{StaticResource LineBrush}" IsVisible="False">
+                        Background="{DynamicResource LineBrush}" IsVisible="False">
                   <Border x:Name="ProgressFill" HorizontalAlignment="Left" CornerRadius="2" Width="0"
-                          Background="{StaticResource DownGaugeBrush}" />
+                          Background="{DynamicResource DownGaugeBrush}" />
                 </Border>
               </StackPanel>
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
@@ -171,15 +190,15 @@
           </Border>
 
           <!-- Support (user, 2026-11-17): the last row, with a soft golden glow so it looks different from settings. -->
-          <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Background="{StaticResource SupportGlowBrush}"
+          <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Background="{DynamicResource SupportGlowBrush}"
                   CornerRadius="0,0,15,15">
             <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="24">
               <StackPanel Spacing="2" VerticalAlignment="Center">
-                <TextBlock Classes="rowTitle" Text="Support Netcheck" Foreground="{StaticResource SupportBrush}" />
+                <TextBlock Classes="rowTitle" Text="Support Netcheck" Foreground="{DynamicResource SupportBrush}" />
                 <TextBlock Classes="rowHint" Text="Netcheck is free. If it helps you, a small tip keeps it going." />
               </StackPanel>
               <Button Grid.Column="1" x:Name="SupportLink" Theme="{StaticResource NcLinkButton}" Classes="rowLink"
-                      Content="Donate on Ko-fi ↗" Foreground="{StaticResource SupportBrush}" VerticalAlignment="Center"
+                      Content="Donate on Ko-fi ↗" Foreground="{DynamicResource SupportBrush}" VerticalAlignment="Center"
                       ToolTip.Tip="Opens ko-fi.com/trueshepherdmusic in your browser" />
             </Grid>
           </Border>

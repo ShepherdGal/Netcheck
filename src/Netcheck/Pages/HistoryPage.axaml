@@ -5,7 +5,7 @@
        One button whose label follows the picks: Open (one) / Compare (two). Eight rows per page, never scrolls. -->
   <UserControl.Styles>
     <Style Selector="Border.row">
-      <Setter Property="Background" Value="{StaticResource Surface2ClearBrush}" />
+      <Setter Property="Background" Value="{DynamicResource Surface2ClearBrush}" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="Focusable" Value="True" />
       <Setter Property="Transitions">
@@ -13,13 +13,13 @@
       </Setter>
     </Style>
     <Style Selector="Border.row:pointerover">
-      <Setter Property="Background" Value="#06FFFFFF" />
+      <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
     </Style>
     <Style Selector="Border.row.sel">
-      <Setter Property="Background" Value="#148DB8F2" />
+      <Setter Property="Background" Value="{DynamicResource RowSelectedBrush}" />
     </Style>
     <Style Selector="Border.row:focus-visible">
-      <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
     </Style>
     <Style Selector="Button:disabled">
       <Setter Property="Opacity" Value="0.35" />
@@ -43,11 +43,11 @@
       <Grid ColumnDefinitions="*,Auto,*" Margin="0,16,0,0">
         <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
           <Button x:Name="NewerButton" Theme="{StaticResource NcLinkButton}" Content="‹ Newer" />
-          <TextBlock x:Name="PageText" FontSize="17" Foreground="{StaticResource Ink3Brush}" VerticalAlignment="Center" />
+          <TextBlock x:Name="PageText" FontSize="17" Foreground="{DynamicResource Ink3Brush}" VerticalAlignment="Center" />
           <Button x:Name="OlderButton" Theme="{StaticResource NcLinkButton}" Content="Older ›" />
         </StackPanel>
         <Button Grid.Column="1" x:Name="GoButton" Theme="{StaticResource NcPrimaryButton}" Classes="big" Content="Compare" MinWidth="150" />
-        <TextBlock Grid.Column="2" x:Name="Hint" FontSize="17" Foreground="{StaticResource Ink3Brush}"
+        <TextBlock Grid.Column="2" x:Name="Hint" FontSize="17" Foreground="{DynamicResource Ink3Brush}"
                    HorizontalAlignment="Right" VerticalAlignment="Center" />
       </Grid>
     </StackPanel>
@@ -73,8 +73,8 @@
       </Border>
       <Border Classes="card" Padding="24,16" Margin="0,16,0,0">
         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
-          <TextBlock Text="In between" FontSize="16" Foreground="{StaticResource Ink3Brush}" VerticalAlignment="Top" Margin="0,1,0,0" />
-          <TextBlock Grid.Column="1" x:Name="BetweenText" FontSize="17" Foreground="{StaticResource Ink2Brush}" TextWrapping="Wrap" />
+          <TextBlock Text="In between" FontSize="16" Foreground="{DynamicResource Ink3Brush}" VerticalAlignment="Top" Margin="0,1,0,0" />
+          <TextBlock Grid.Column="1" x:Name="BetweenText" FontSize="17" Foreground="{DynamicResource Ink2Brush}" TextWrapping="Wrap" />
         </Grid>
       </Border>
     </StackPanel>

@@ -105,7 +105,7 @@ public sealed partial class HistoryPage : UserControl
         var pick = new Border
         {
             Width = 20, Height = 20, CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1.5),
-            BorderBrush = selected ? Brush("AccentBrush") : new SolidColorBrush(Color.FromArgb(64, 255, 255, 255)),
+            BorderBrush = selected ? Brush("AccentBrush") : Brush("OutlineBrush"),
             Background = selected ? Brush("AccentBrush") : Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Left,
             Child = new TextBlock
             {
@@ -360,11 +360,11 @@ public sealed partial class HistoryPage : UserControl
         Avalonia.Automation.AutomationProperties.SetName(control, name);
 
     private static IBrush Brush(string key) =>
-        Application.Current!.TryFindResource(key, out var value) && value is IBrush brush ? brush : Brushes.Gray;
+        ThemeManager.Brush(key);
 
     private static IBrush ToneBrush(Tone tone)
     {
-        var key = tone switch { Tone.Good => "GoodColor", Tone.Fair => "FairColor", Tone.Poor => "PoorColor", _ => "NeutralColor" };
-        return new SolidColorBrush(Application.Current!.TryFindResource(key, out var c) && c is Color color ? color : Colors.Gray);
+        // The shared resource brush itself, so a theme switch can swap it for the other theme\'s copy.
+        return Brush(tone switch { Tone.Good => "GoodBrush", Tone.Fair => "FairBrush", Tone.Poor => "PoorBrush", _ => "NeutralBrush" });
     }
 }

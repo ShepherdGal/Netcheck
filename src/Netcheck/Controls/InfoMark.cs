@@ -47,5 +47,5 @@ internal sealed class InfoMark : Button
         ((TextBlock)circle.Child!).Foreground = Brush(key);
     }
 
-    private static IBrush Brush(string key) => (IBrush)Application.Current!.FindResource(key)!;
+    private static IBrush Brush(string key) => ThemeManager.Brush(key);
 }

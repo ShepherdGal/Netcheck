@@ -80,7 +80,7 @@ public sealed class ArcGauge : Control
             context.DrawGeometry(null, new Pen(accent, t, lineCap: PenLineCap.Round), Arc(center, radius, 0, v));
             var tip = On(center, radius, Angle(v));
             using (context.PushOpacity(0.9))
-                context.DrawEllipse(Brushes.White, null, tip, 3.5, 3.5);
+                context.DrawEllipse(this.TryFindResource("GaugeTipBrush", ActualThemeVariant, out var tipBrush) && tipBrush is IBrush themed ? themed : Brushes.White, null, tip, 3.5, 3.5);
         }
     }
 
