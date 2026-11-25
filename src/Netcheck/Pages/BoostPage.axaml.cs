@@ -165,7 +165,7 @@ public sealed partial class BoostPage : UserControl
         UpdateChooseButton();
     }
 
-    private BoostItem[] Chosen() => ChooseRows.Children.OfType<Border>()
+    private BoostItem[] Chosen() => ChooseRows.Children.OfType<Netcheck.Controls.Divided>()
         .Select(b => (b.Child as Grid)?.Children.OfType<CheckBox>().FirstOrDefault())
         .Where(c => c is { IsChecked: true, Tag: BoostItem }).Select(c => (BoostItem)c!.Tag!).ToArray();
 
@@ -411,8 +411,9 @@ public sealed partial class BoostPage : UserControl
 
     private static void Trim(Panel rows)
     {
-        if (rows.Children.FirstOrDefault() is Border first)
-            first.BorderThickness = new Thickness(0);
+        // The first row has no divider above it: the card's own edge is there (a leftover line made it look doubled).
+        if (rows.Children.FirstOrDefault() is Netcheck.Controls.Divided first)
+            first.Lines = default;
     }
 
     private static Grid Grid2(Control left, Control right)
