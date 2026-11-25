@@ -342,10 +342,12 @@ public sealed partial class SettingsPage : UserControl
                 Classes = { "seg" },
                 GroupName = "AppSize",
                 Content = (scale * 100).ToString("0", CultureInfo.CurrentCulture) + "%",
-                IsChecked = Math.Abs(scale - window.AppScale) < 0.001,
-                IsEnabled = window.Fits(scale),
+                // On a screen too short for 100 %, the 100 % pill stands for "as big as fits" (the app shrinks to fit).
+                IsChecked = Math.Abs(scale - Math.Max(1, window.AppScale)) < 0.001,
+                IsEnabled = scale <= 1 || window.Fits(scale),
             };
-            ToolTip.SetTip(pill, pill.IsEnabled ? null : "Too big for this screen");
+            ToolTip.SetTip(pill, !pill.IsEnabled ? "Too big for this screen"
+                : scale <= 1 && window.AppScale < 1 ? "Shrunk a little to fit this screen" : null);
             var chosen = scale;
             pill.IsCheckedChanged += (_, _) =>
             {

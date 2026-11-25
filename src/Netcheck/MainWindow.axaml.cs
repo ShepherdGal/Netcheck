@@ -14,7 +14,8 @@ public sealed partial class MainWindow : Window
 
     // The design size. The window never resizes freely; Settings → App size scales everything evenly instead.
     internal const double BaseWidth = 1120, BaseHeight = 920;
-    // 100 % is the smallest window (user, 2026-11-17): no 90 %, and nothing smaller even on a small screen.
+    // 100 % is the smallest size to pick (user, 2026-11-17): no 90 %. Only a screen too short for 100 % shrinks the app
+    // to fit (FitScale, 2026-11-25), so nothing is ever cut off.
     internal static readonly double[] Scales = [1.0, 1.1, 1.25, 1.5];
     // Caption buttons: two 36 px buttons, 4 px apart, 12 px from the edge (NcChrome); the gear sits 4 px before them.
     private const double TitleBar = 56, CaptionButtons = 36 + 4 + 36 + 12;
@@ -77,15 +78,36 @@ public sealed partial class MainWindow : Window
 
     internal double AppScale { get; private set; } = 1;
 
-    /// <summary>Scales that fit this screen's working area (taskbar excluded).</summary>
-    internal bool Fits(double scale)
+    /// <summary>This screen's working area (taskbar excluded) in layout units, or null when no screen is known.</summary>
+    private Size? WorkArea()
     {
+#if DEBUG
+        // Test hook (debug builds only): NETCHECK_TEST_WORKAREA=1536x816 pretends the screen is that small.
+        if (Environment.GetEnvironmentVariable("NETCHECK_TEST_WORKAREA") is { } fake
+            && fake.Split('x') is [var w, var h]
+            && double.TryParse(w, System.Globalization.CultureInfo.InvariantCulture, out var fw)
+            && double.TryParse(h, System.Globalization.CultureInfo.InvariantCulture, out var fh))
+            return new Size(fw, fh);
+#endif
         var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
-        if (screen is null)
-            return scale <= 1;
-        var area = screen.WorkingArea.Size.ToSize(screen.Scaling);
-        return BaseWidth * scale <= area.Width && BaseHeight * scale <= area.Height;
+        return screen?.WorkingArea.Size.ToSize(screen.Scaling);
     }
+
+    /// <summary>Scales that fit this screen's working area (taskbar excluded).</summary>
+    internal bool Fits(double scale) =>
+        WorkArea() is not { } area ? scale <= 1 : BaseWidth * scale <= area.Width && BaseHeight * scale <= area.Height;
+
+    /// <summary>
+    /// The size used when 100 % doesn't fit: the largest whole percent that does. On a short screen (e.g. a 1080p laptop
+    /// at 125 % has ~816 px of height) a 920 px window would be cut short and lose its title bar and bottom, so the
+    /// whole app shrinks evenly instead (user report, 2026-11-25). Never above 100 %.
+    /// </summary>
+    internal double FitScale() =>
+        WorkArea() is not { } area ? 1
+            // 8 px spare for the window's own border, so the frame never pokes under the taskbar.
+            : Math.Min(1, Math.Floor(Math.Min((area.Width - Frame) / BaseWidth, (area.Height - Frame) / BaseHeight) * 100) / 100);
+
+    private const double Frame = 8;
 
     /// <summary>
     /// Sets the app size. 0 = automatic: 100 % if it fits, otherwise the largest size that does.
@@ -93,8 +115,9 @@ public sealed partial class MainWindow : Window
     /// </summary>
     internal void ApplyScale(double requested, bool save = true)
     {
-        // An older saved 90 % counts as 100 %; a size that doesn't fit this screen falls back to 100 %, never below.
-        var scale = requested >= 1 && Fits(requested) ? requested : 1.0;
+        // An older saved 90 % counts as 100 %; a size that doesn't fit this screen falls back to 100 %, or, when even
+        // 100 % is too big for the screen, to the largest size that fits.
+        var scale = requested >= 1 && Fits(requested) ? requested : FitScale();
         AppScale = scale;
         Scaler.LayoutTransform = new Avalonia.Media.ScaleTransform(scale, scale);
         Width = BaseWidth * scale;
